@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>自然人出租不动产智能算税助手 - 怀宁县</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --primary:#1a5276;--primary-light:#2980b9;--primary-dark:#154360;
+            --accent:#e74c3c;--success:#27ae60;--warning:#f39c12;
+            --bg:#f5f7fa;--card:#fff;--text:#2c3e50;--text-light:#7f8c8d;
+            --border:#e8ecf1;--shadow:0 2px 12px rgba(0,0,0,.08);
+        }
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+            background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;
+            -webkit-font-smoothing:antialiased;
+        }
+        .container{max-width:780px;margin:0 auto;padding:0 0 60px}
+        .header{
+            background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
+            color:#fff;padding:24px 20px 32px;position:relative;overflow:hidden;
+        }
+        .header::after{
+            content:'';position:absolute;bottom:-20px;left:0;right:0;
+            height:40px;background:var(--bg);border-radius:50% 50% 0 0;
+        }
+        .header h1{font-size:20px;font-weight:700;margin-bottom:4px}
+        .header p{font-size:13px;opacity:.85}
+        .badge{
+            display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;
+            padding:2px 10px;font-size:11px;margin-top:8px;backdrop-filter:blur(4px);
+        }
+        .card{
+            background:var(--card);border-radius:12px;box-shadow:var(--shadow);
+            margin:-16px 16px 16px;padding:20px;position:relative;z-index:1;
+        }
+        .card+.card{margin-top:0}
+        .section-title{
+            font-size:16px;font-weight:700;color:var(--primary);
+            margin-bottom:16px;padding-left:10px;
+            border-left:3px solid var(--primary-light);
+        }
+        .form-group{margin-bottom:16px}
+        .form-group label{
+            display:block;font-size:14px;font-weight:600;color:var(--text);
+            margin-bottom:6px;
+        }
+        .form-group label .required{color:var(--accent);margin-left:2px}
+        .form-group label .hint{
+            font-size:11px;font-weight:400;color:var(--text-light);display:block;margin-top:2px;
+        }
+        select,input[type="text"],input[type="number"],input[type="date"]{
+            width:100%;padding:10px 12px;border:1.5px solid var(--border);
+            border-radius:8px;font-size:15px;color:var(--text);
+            background:#fff;transition:border-color .2s,box-shadow .2s;
+            -webkit-appearance:none;appearance:none;
+        }
+        select{
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237f8c8d' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+        }
+        select:focus,input:focus{
+            outline:none;border-color:var(--primary-light);
+            box-shadow:0 0 0 3px rgba(41,128,185,.15);
+        }
+        .row{display:flex;gap:12px}
+        .row .form-group{flex:1}
+        .radio-group{display:flex;gap:12px;flex-wrap:wrap}
+        .radio-item{
+            flex:1;min-width:calc(50% - 6px);padding:12px;border:1.5px solid var(--border);
+            border-radius:8px;text-align:center;cursor:pointer;transition:all .2s;
+            font-size:14px;position:relative;
+        }
+        .radio-item input{display:none}
+        .radio-item.active{
+            border-color:var(--primary-light);background:rgba(41,128,185,.05);
+            color:var(--primary);
+        }
+        .radio-item.active::after{
+            content:'✓';position:absolute;top:4px;right:8px;
+            font-size:12px;color:var(--primary-light);font-weight:700;
+        }
+        .radio-item .sub{font-size:11px;color:var(--text-light);margin-top:2px}
+        .radio-item.active .sub{color:var(--primary-light)}
+        .unit{font-size:12px;color:var(--text-light);margin-left:4px}
+        .conditional{display:none}
+        .conditional.show{display:block;animation:fadeIn .3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .calc-btn{
+            display:block;width:100%;padding:14px;border:none;border-radius:10px;
+            background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
+            color:#fff;font-size:17px;font-weight:700;cursor:pointer;
+            transition:all .2s;box-shadow:0 4px 15px rgba(26,82,118,.3);
+            margin-top:8px;
+        }
+        .calc-btn:active{transform:scale(.98);box-shadow:0 2px 8px rgba(26,82,118,.2)}
+        .result-area{display:none}
+        .result-area.show{display:block;animation:fadeIn .4s ease}
+        .summary-box{
+            background:linear-gradient(135deg,#1a5276 0%,#2471a3 100%);
+            color:#fff;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;
+        }
+        .summary-box .total-label{font-size:14px;opacity:.85}
+        .summary-box .total-amount{font-size:36px;font-weight:800;margin:4px 0}
+        .summary-box .total-amount .currency{font-size:18px;margin-right:2px}
+        .summary-box .sub-info{font-size:12px;opacity:.75}
+        .summary-box.mode-compare{display:flex;gap:12px;text-align:center}
+        .summary-box.mode-compare .half{flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:12px}
+        .summary-box.mode-compare .half .mode-label{font-size:12px;opacity:.8;margin-bottom:4px}
+        .summary-box.mode-compare .half .mode-amount{font-size:24px;font-weight:700}
+        .summary-box.mode-compare .half.best{background:rgba(39,174,96,.25);border:1px solid rgba(39,174,96,.4)}
+        .summary-box.mode-compare .half.best .mode-label::after{
+            content:'更优';display:inline-block;background:#27ae60;color:#fff;
+            font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;
+        }
+        .tax-detail{margin-bottom:10px}
+        .tax-detail-header{
+            display:flex;justify-content:space-between;align-items:center;
+            padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;
+        }
+        .tax-detail-header .tax-name{font-size:15px;font-weight:600}
+        .tax-detail-header .tax-amount{font-size:16px;font-weight:700;color:var(--accent)}
+        .tax-detail-header .tax-amount.free{color:var(--success);font-size:14px}
+        .tax-detail-header .arrow{
+            font-size:12px;color:var(--text-light);transition:transform .2s;
+        }
+        .tax-detail-header .arrow.open{transform:rotate(90deg)}
+        .tax-detail-body{
+            display:none;padding:10px 0 6px;font-size:13px;color:var(--text-light);line-height:1.8;
+            border-bottom:1px solid var(--border);
+        }
+        .tax-detail-body.show{display:block}
+        .tax-detail-body .calc-step{
+            padding:6px 0;display:flex;align-items:flex-start;
+        }
+        .tax-detail-body .calc-step .label{flex-shrink:0;min-width:90px;color:var(--text-light)}
+        .tax-detail-body .calc-step .value{font-weight:600;color:var(--text);margin-left:12px;word-break:break-all;flex:1;line-height:1.7}
+        .tax-detail-body .policy-ref{
+            font-size:11px;color:#95a5a6;margin-top:6px;padding-top:6px;
+            border-top:1px dashed var(--border);
+        }
+        .notice-box{
+            background:#fef9e7;border:1px solid #f9e79f;border-radius:8px;
+            padding:14px;font-size:12px;color:#7d6608;line-height:1.7;margin-top:16px;
+        }
+        .notice-box .notice-title{font-weight:700;margin-bottom:4px}
+        .footer{
+            text-align:center;padding:20px;font-size:12px;color:var(--text-light);
+            line-height:1.8;
+        }
+        .footer a{color:var(--primary-light);text-decoration:none}
+        .toast{
+            position:fixed;top:20px;left:50%;transform:translateX(-50%);
+            background:rgba(0,0,0,.78);color:#fff;padding:10px 20px;
+            border-radius:8px;font-size:14px;z-index:1000;
+            animation:toastIn .3s ease;display:none;
+        }
+        .toast.show{display:block}
+        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        .reset-btn{
+            display:inline-block;padding:8px 20px;border:1.5px solid var(--border);
+            border-radius:8px;background:#fff;color:var(--text);font-size:14px;
+            cursor:pointer;transition:all .2s;margin-top:12px;
+        }
+        .reset-btn:active{background:var(--bg)}
+        @media(min-width:500px){
+            .container{padding:0 20px 60px}
+            .card{margin:-16px 0 16px}
+            .header h1{font-size:24px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部 -->
+        <div class="header">
+            <h1>自然人出租不动产智能算税助手</h1>
+            <p>安徽省安庆市怀宁县</p>
+            <div class="badge">适用于怀宁县辖区内自然人出租不动产/场地代开发票场景</div>
+        </div>
+
+        <!-- 基本信息表单 -->
+        <div class="card">
+            <div class="section-title">基本信息</div>
+            <div class="form-group">
+                <label>房屋/场地所在乡镇<span class="required">*</span></label>
+                <select id="town" onchange="onTownChange()">
+                    <option value="">请选择乡镇</option>
+                </select>
+                <div class="hint" id="townHint" style="display:none;margin-top:4px;color:#e74c3c;font-size:12px"></div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>租赁起始日期<span class="required">*</span></label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label>租赁截止日期<span class="required">*</span></label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>租赁总金额（元）<span class="required">*</span></label>
+                <input type="number" id="totalRent" placeholder="请输入含税租赁总金额" min="0" step="0.01">
+                <div class="hint" id="rentHint" style="margin-top:4px;color:var(--text-light)"></div>
+            </div>
+        </div>
+
+        <!-- 房屋性质 -->
+        <div class="card">
+            <div class="section-title">房屋/场地性质</div>
+            <div class="form-group">
+                <label>出租类型<span class="required">*</span></label>
+                <div class="radio-group" id="propertyTypeGroup">
+                    <label class="radio-item" onclick="selectRadio('propertyType','housing')">
+                        <input type="radio" name="propertyType" value="housing">
+                        住房
+                        <div class="sub">住宅、公寓</div>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio('propertyType','non_housing')">
+                        <input type="radio" name="propertyType" value="non_housing">
+                        非住房
+                        <div class="sub">商铺、厂房、办公等</div>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio('propertyType','land')">
+                        <input type="radio" name="propertyType" value="land">
+                        场地/空地
+                        <div class="sub">单独出租土地</div>
+                    </label>
+                </div>
+            </div>
+            <div class="conditional" id="nonHousingFields">
+                <div class="form-group">
+                    <label>占地面积（平方米）<span class="required">*</span></label>
+                    <input type="number" id="landArea" placeholder="不动产权证/土地证载明面积" min="0" step="0.01">
+                    <div class="hint">非住房需缴纳城镇土地使用税</div>
+                </div>
+                <div class="form-group">
+                    <label>详细座落地址</label>
+                    <input type="text" id="address" placeholder="如：高河镇新安路128号/石牌镇邵段村/月山镇铁路以南xxx">
+                    <div class="hint" id="addressHint"></div>
+                </div>
+                <div class="form-group">
+                    <label>土地等级</label>
+                    <select id="landGrade">
+                        <option value="">请选择（默认从高征收）</option>
+                        <option value="1">一等 · 5 元/㎡·年</option>
+                        <option value="2">二等 · 4 元/㎡·年</option>
+                        <option value="3">三等 · 3 元/㎡·年</option>
+                        <option value="4">四等 · 2 元/㎡·年</option>
+                    </select>
+                    <div class="hint">默认按最高等级征收，填写详细地址后系统自动判断适用等级</div>
+                </div>
+            </div>
+            <div class="conditional" id="landFields">
+                <div class="form-group">
+                    <label>占地面积（平方米）<span class="required">*</span></label>
+                    <input type="number" id="landAreaLand" placeholder="出租土地面积" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>详细座落地址</label>
+                    <input type="text" id="addressLand" placeholder="如：高河镇新安路128号/石牌镇邵段村/月山镇铁路以南xxx">
+                    <div class="hint" id="addressHintLand"></div>
+                </div>
+                <div class="form-group">
+                    <label>土地等级</label>
+                    <select id="landGradeLand">
+                        <option value="">请选择（默认从高征收）</option>
+                        <option value="1">一等 · 5 元/㎡·年</option>
+                        <option value="2">二等 · 4 元/㎡·年</option>
+                        <option value="3">三等 · 3 元/㎡·年</option>
+                        <option value="4">四等 · 2 元/㎡·年</option>
+                    </select>
+                    <div class="hint">默认按最高等级征收，填写详细地址后系统自动判断适用等级</div>
+                </div>
+            </div>
+            <div class="conditional" id="housingFields">
+                <div class="form-group" style="margin-bottom:0">
+                    <div style="padding:10px 14px;background:#eaf7ef;border-radius:8px;font-size:13px;color:#1e8449;line-height:1.6">
+                        ✅ <b>住房优惠：</b>个人出租住房免征城镇土地使用税和印花税，房产税减按4%征收
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 发票类型 -->
+        <div class="card">
+            <div class="section-title">代开发票类型</div>
+            <div class="form-group">
+                <div class="radio-group" id="invoiceTypeGroup">
+                    <label class="radio-item" onclick="selectRadio('invoiceType','general')">
+                        <input type="radio" name="invoiceType" value="general">
+                        增值税普通发票
+                        <div class="sub">月租金≤10万可免增值税</div>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio('invoiceType','special')">
+                        <input type="radio" name="invoiceType" value="special">
+                        增值税专用发票
+                        <div class="sub">须全额缴纳增值税</div>
+                    </label>
+                </div>
+                <div id="specialHint" class="conditional" style="margin-top:10px">
+                    <div style="padding:10px 14px;background:#fef3cd;border-radius:8px;font-size:13px;color:#856404;line-height:1.6;border:1px solid #f0d78c">
+                        ⚠️ <b>专票提示：</b>代开增值税专用发票的，不能享受月销售额10万元以下免征增值税的优惠政策，须全额缴纳增值税。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个税计算方式 -->
+        <div class="card">
+            <div class="section-title">个人所得税计算方式</div>
+            <div class="form-group">
+                <div class="radio-group" id="iitModeGroup">
+                    <label class="radio-item" onclick="selectRadio('iitMode','simplified')">
+                        <input type="radio" name="iitMode" value="simplified">
+                        综合征收率
+                        <div class="sub">统一1%</div>
+                    </label>
+                    <label class="radio-item" onclick="selectRadio('iitMode','detailed')">
+                        <input type="radio" name="iitMode" value="detailed">
+                        据实征收
+                        <div class="sub">按税法逐项扣除计算</div>
+                    </label>
+                </div>
+            </div>
+            <div class="conditional" id="iitDetailedFields">
+                <div class="form-group">
+                    <label>修缮费总额（元）</label>
+                    <input type="number" id="repairCost" placeholder="无修缮费请填0" min="0" step="0.01" value="0">
+                    <div class="hint">每次（月）最高扣除800元，不足800按实际扣除，超出部分次月继续抵扣直至扣完</div>
+                </div>
+                <div class="form-group">
+                    <label>转租租金支出总额（元）</label>
+                    <input type="number" id="subRentCost" placeholder="非转租业务请填0" min="0" step="0.01" value="0">
+                    <div class="hint">仅限转租业务填写。向房屋出租方支付的租金可在个税前扣除（按月均摊）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 计算按钮 -->
+        <div class="card" style="padding:16px 20px">
+            <button class="calc-btn" onclick="try{calculateTax()}catch(e){showToast('计算出错: '+e.message);console.error(e)}">一键计算税款</button>
+            <div style="text-align:center">
+                <button class="reset-btn" onclick="resetForm()">重新填写</button>
+            </div>
+        </div>
+
+        <!-- 计算结果 -->
+        <div class="result-area" id="resultArea">
+            <!-- 住房结果 -->
+            <div class="card" id="housingResult" style="display:none">
+                <div class="section-title">税款计算结果（住房）</div>
+                <div class="summary-box" id="housingSummary"></div>
+                <div id="housingDetails"></div>
+            </div>
+            <!-- 非住房结果 -->
+            <div class="card" id="nonHousingResult" style="display:none">
+                <div class="section-title">税款计算结果（非住房）</div>
+                <div class="summary-box" id="nonHousingSummary"></div>
+                <div id="nonHousingDetails"></div>
+            </div>
+            <!-- 场地结果 -->
+            <div class="card" id="landResult" style="display:none">
+                <div class="section-title">税款计算结果（场地/空地）</div>
+                <div class="summary-box" id="landSummary"></div>
+                <div id="landDetails"></div>
+            </div>
+            <!-- 温馨提示 -->
+            <div class="card">
+                <div class="notice-box">
+                    <div class="notice-title">温馨提示</div>
+                    <div>
+                        1. 本工具仅供纳税参考，实际缴纳税款以税务机关核定为准。<br>
+                        2. 计算结果基于截至 <b>2026年4月</b> 的现行税收政策，如政策调整请以最新文件为准。<br>
+                        3. 城镇土地使用税按年计算、分期缴纳，此处按租赁期占比分摊计算。<br>
+                        4. 如有疑问，请咨询怀宁县税务局或拨打 <b>12366</b> 纳税服务热线。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            怀宁县税务局 · 自然人出租不动产智能算税助手<br>
+            政策更新：2026年4月 | 如有疑问请咨询办税大厅<br>
+            制作者：By 袁亚辉
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ==================== 税费政策配置（集中管理，便于后期维护） ====================
+    const TAX_CONFIG = {
+        version: '2026-04',
+        lastUpdate: '2026年4月',
+        // 增值税
+        vat: {
+            housingRate: 0.015,       // 住房：3%减按1.5%
+            nonHousingRate: 0.03,     // 非住房：3%
+            landRate: 0.03,           // 场地：3%
+            freeThreshold: 100000,    // 月不含税销售额10万元以下免征
+            freeEndDate: '2027-12-31',// 财政部税务总局公告2026年第10号
+            policyRefs: [
+                '《增值税法》（2026年1月1日起施行）',
+                '财政部 税务总局公告2026年第10号',
+                '财税〔2016〕36号'
+            ]
+        },
+        // 城市维护建设税
+        urbanTax: {
+            rates: { town: 0.05, county: 0.01 }, // 怀宁县：建制镇5%，乡1%（均为法定税率，非减半后）
+            halfCollection: true,                  // 六税两费减半（至2027.12.31）
+            halfEndDate: '2027-12-31',
+            policyRefs: [
+                '《城市维护建设税法》',
+                '财政部 税务总局公告2024年第12号（六税两费减半至2027.12.31）'
+            ]
+        },
+        // 教育费附加
+        // 免征：财税〔2016〕12号，所有缴纳义务人月销售额≤10万元免征
+        // 减半：财政部 税务总局公告2023年第12号，小规模纳税人/小型微利企业/个体工商户减半（至2027.12.31）
+        eduSurcharge: {
+            rate: 0.03,
+            freeThreshold: 100000,      // 月不含税销售额10万元以下免征
+            freeApplicableTo: 'all',    // 所有缴纳义务人
+            halfCollection: true,       // 六税两费减半
+            halfEndDate: '2027-12-31',
+            halfApplicableTo: 'small_scale', // 小规模纳税人/小型微利企业/个体工商户
+            policyRefs: [
+                '财税〔2016〕12号（月销售额≤10万元免征，所有缴纳义务人均适用）',
+                '财政部 税务总局公告2023年第12号（小规模纳税人等减半，至2027.12.31）'
+            ]
+        },
+        // 地方教育附加（同上）
+        localEduSurcharge: {
+            rate: 0.02,
+            freeThreshold: 100000,
+            freeApplicableTo: 'all',
+            halfCollection: true,
+            halfEndDate: '2027-12-31',
+            halfApplicableTo: 'small_scale',
+            policyRefs: [
+                '财税〔2016〕12号（月销售额≤10万元免征，所有缴纳义务人均适用）',
+                '财政部 税务总局公告2023年第12号（小规模纳税人等减半，至2027.12.31）'
+            ]
+        },
+        // 房产税
+        propertyTax: {
+            housingRate: 0.04,         // 住房4%（财税〔2008〕24号）
+            nonHousingRate: 0.12,      // 非住房12%
+            halfCollection: true,       // 六税两费减半（自然人代开发票按小规模纳税人享受）
+            halfEndDate: '2027-12-31',
+            policyRefs: [
+                '《房产税暂行条例》',
+                '财税〔2008〕24号',
+                '财政部 税务总局公告2024年第12号（六税两费减半至2027.12.31）'
+            ]
+        },
+        // 城镇土地使用税
+        landTax: {
+            // 根据怀宁县政府通知：四等税额标准（元/㎡·年）
+            // 默认从高征收，填写详细地址后自动判断是否可降级
+            // townGrades: 各乡镇默认等级（最高）
+            townGrades: {
+                '高河镇': 1, '马庙镇': 1, '金拱镇': 1, '茶岭镇': 1,
+                '县工业园': 2,
+                '石牌镇': 3, '月山镇': 3,
+                '腊树镇': 4, '平山镇': 4, '黄龙镇': 4,
+                '三桥镇': 4, '黄墩镇': 4, '小市镇': 4,
+                '公岭镇': 4, '洪铺镇': 4, '江镇镇': 4
+            },
+            // 详细地址关键词 → 降级规则
+            // 每个乡镇可有多组降级规则，按 fromGrade → toGrade 降级
+            // matchRule: 'any'=命中任一关键词即降级, 'all'=全部关键词都命中才降级
+            townDowngradeRules: {
+                '高河镇': [
+                    { fromGrade: 1, toGrade: 2, keywords: ['工业园','经开区','开发区','工业园规划','经开区规划'], desc: '县工业园规划范围内' },
+                    { fromGrade: 1, toGrade: 3, keywords: ['工业园','经开区'], desc: '联合片区内除一、二等范围外', matchRule: 'none', exclude: ['一等','二等','核心','滨河','独秀','高河大道','政和路'] },
+                    { fromGrade: 1, toGrade: 3, keywords: ['联合片区外','非联合片区','镇区外'], desc: '联合片区外' }
+                ],
+                '马庙镇': [
+                    { fromGrade: 1, toGrade: 2, keywords: ['工业园','经开区','开发区'], desc: '县工业园规划范围内' },
+                    { fromGrade: 1, toGrade: 3, keywords: ['联合片区外','非联合片区','镇区外','农村'], desc: '联合片区内除一、二等外 / 片区外' }
+                ],
+                '金拱镇': [
+                    { fromGrade: 1, toGrade: 2, keywords: ['工业园','经开区','开发区'], desc: '县工业园规划范围内' },
+                    { fromGrade: 1, toGrade: 3, keywords: ['联合片区外','非联合片区','镇区外','农村'], desc: '联合片区内除一、二等外 / 片区外' }
+                ],
+                '茶岭镇': [
+                    { fromGrade: 1, toGrade: 2, keywords: ['工业园','经开区','开发区'], desc: '县工业园规划范围内' },
+                    { fromGrade: 1, toGrade: 3, keywords: ['联合片区外','非联合片区','镇区外','农村'], desc: '联合片区内除一、二等外 / 片区外' }
+                ],
+                '石牌镇': [
+                    { fromGrade: 3, toGrade: 4, keywords: ['邵段','庆洲河以东','邵段村','农村','村','自然村','万全','杨牌','普济'], desc: '核心区以外范围' }
+                ],
+                '月山镇': [
+                    { fromGrade: 3, toGrade: 4, keywords: ['铁路以南','高安铁路以南','南边','农村','村','自然村'], desc: '高安铁路以南范围' }
+                ]
+            },
+            gradeRates: { 1: 5, 2: 4, 3: 3, 4: 2 },  // 元/㎡·年
+            gradeNames: { 1: '一等', 2: '二等', 3: '三等', 4: '四等' },
+            halfCollection: true,
+            halfEndDate: '2027-12-31',
+            policyRefs: [
+                '《城镇土地使用税暂行条例》',
+                '《安徽省城镇土地使用税实施办法》',
+                '《怀宁县人民政府关于调整城镇土地使用税征收范围和税额标准的通知》（2018年）',
+                '财政部 税务总局公告2024年第12号（六税两费减半至2027.12.31）'
+            ]
+        },
+        // 印花税
+        stampTax: {
+            rate: 0.001,              // 租赁合同千分之一
+            housingFree: true,         // 住房免税（财税〔2008〕24号）
+            halfCollection: true,      // 六税两费减半
+            halfEndDate: '2027-12-31',
+            policyRefs: [
+                '《印花税法》',
+                '财税〔2008〕24号（住房免征）',
+                '财政部 税务总局公告2024年第12号（六税两费减半至2027.12.31）'
+            ]
+        },
+        // 个人所得税
+        // 税目：财产租赁所得，税率20%
+        // 住房优惠：财税〔2008〕24号，减按10%
+        // 据实征收扣除顺序：国税发〔1994〕89号
+        //   ①财产租赁过程中缴纳的税费（不含增值税）
+        //   ②修缮费（月≤800元，跨月结转）
+        //   ③法定费用扣除：月净收入≤4000扣800，>4000扣20%
+        iit: {
+            housingRate: 0.10,         // 住房减按10%
+            nonHousingRate: 0.20,      // 非住房20%
+            fieldRate: 0.20,           // 场地20%
+            simplifiedRate: 0.01,   // 综合征收率：统一1%
+            deduction800: 800,          // 每次收入≤4000元，扣800
+            deduction20pct: 0.20,       // 每次收入>4000元，扣20%
+            repairMax: 800,             // 修缮费每月最高800
+            policyRefs: [
+                '《个人所得税法》',
+                '国税发〔1994〕89号',
+                '财税〔2008〕24号'
+            ]
+        }
+    };
+
+    // ==================== 乡镇数据 ====================
+    // type: 城建税适用类型（county_town=建制镇5%, township=乡1%）
+    // landTaxScope: 城镇土地使用税征收范围（based on 怀宁县政府通知）
+    //   'joint_zone'=联合片区(高河/马庙/金拱/茶岭)
+    //   'shipei'=石牌镇, 'yueshan'=月山镇
+    //   'town4'=一般建制镇(四等2元)
+    //   'none'=不征城镇土地使用税(乡)
+    const TOWNS = {
+        '高河镇': { type: 'county_town', landTaxScope: 'joint_zone' },
+        '石牌镇': { type: 'town', landTaxScope: 'shipei' },
+        '月山镇': { type: 'town', landTaxScope: 'yueshan' },
+        '马庙镇': { type: 'town', landTaxScope: 'joint_zone' },
+        '金拱镇': { type: 'town', landTaxScope: 'joint_zone' },
+        '茶岭镇': { type: 'town', landTaxScope: 'joint_zone' },
+        '公岭镇': { type: 'town', landTaxScope: 'town4' },
+        '黄墩镇': { type: 'town', landTaxScope: 'town4' },
+        '三桥镇': { type: 'town', landTaxScope: 'town4' },
+        '小市镇': { type: 'town', landTaxScope: 'town4' },
+        '黄龙镇': { type: 'town', landTaxScope: 'town4' },
+        '平山镇': { type: 'town', landTaxScope: 'town4' },
+        '腊树镇': { type: 'town', landTaxScope: 'town4' },
+        '洪铺镇': { type: 'town', landTaxScope: 'town4' },
+        '江镇镇': { type: 'town', landTaxScope: 'town4' },
+        '县工业园': { type: 'county_town', landTaxScope: 'industrial_park' },
+        '凉亭乡': { type: 'township', landTaxScope: 'none' },
+        '石镜乡': { type: 'township', landTaxScope: 'none' },
+        '秀山乡': { type: 'township', landTaxScope: 'none' },
+        '清河乡': { type: 'township', landTaxScope: 'none' },
+        '雷埠乡': { type: 'township', landTaxScope: 'none' }
+    };
+
+    // ==================== 初始化 ====================
+    function init() {
+        const townSelect = document.getElementById('town');
+        Object.keys(TOWNS).forEach(town => {
+            const opt = document.createElement('option');
+            opt.value = town;
+            opt.textContent = town;
+            townSelect.appendChild(opt);
+        });
+        // 设置默认日期
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        document.getElementById('startDate').value = `${y}-${m}-${d}`;
+    }
+
+    // ==================== UI交互 ====================
+    function selectRadio(groupName, value) {
+        const radios = document.querySelectorAll(`input[name="${groupName}"]`);
+        radios.forEach(r => {
+            r.checked = (r.value === value);
+            r.closest('.radio-item').classList.toggle('active', r.value === value);
+        });
+        if (groupName === 'propertyType') onPropertyTypeChange();
+        if (groupName === 'iitMode') {
+            document.getElementById('iitDetailedFields').classList.toggle('show', value === 'detailed');
+        }
+        if (groupName === 'invoiceType') {
+            document.getElementById('specialHint').classList.toggle('show', value === 'special');
+        }
+    }
+
+    function onPropertyTypeChange() {
+        const val = (document.querySelector('input[name="propertyType"]:checked') || {}).value;
+        document.getElementById('housingFields').classList.toggle('show', val === 'housing');
+        document.getElementById('nonHousingFields').classList.toggle('show', val === 'non_housing');
+        document.getElementById('landFields').classList.toggle('show', val === 'land');
+    }
+
+    function onTownChange() {
+        const town = document.getElementById('town').value;
+        if (town && TOWNS[town]) {
+            const info = TOWNS[town];
+            let hint = '';
+            if (town === '县工业园') hint = '县工业园规划范围内，城建税税率5%';
+            else if (info.type === 'county_town') hint = '县人民政府所在地（县城），城建税税率5%';
+            else if (info.type === 'town') hint = '建制镇，城建税税率5%';
+            else hint = '乡，城建税税率1%';
+
+            // 根据征收范围提示城镇土地使用税信息
+            const scope = info.landTaxScope;
+            if (scope === 'none') {
+                hint += ' · 本乡不在城镇土地使用税征收范围内';
+            } else {
+                const defaultGrade = TAX_CONFIG.landTax.townGrades[town];
+                if (defaultGrade) {
+                    hint += ` · 默认${TAX_CONFIG.landTax.gradeNames[defaultGrade]}（${TAX_CONFIG.landTax.gradeRates[defaultGrade]}元/㎡·年，从高征收）`;
+                    const hasRules = TAX_CONFIG.landTax.townDowngradeRules[town];
+                    if (hasRules) hint += '，填写详细地址可自动判断适用等级';
+                }
+            }
+
+            document.getElementById('townHint').style.display = 'block';
+            document.getElementById('townHint').style.color = '#2980b9';
+            document.getElementById('townHint').textContent = hint;
+
+            // 自动匹配土地等级（仅在城镇土地使用税征收范围内）
+            ['landGrade', 'landGradeLand'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) {
+                    if (scope === 'none') {
+                        sel.value = '';
+                        sel.disabled = true;
+                    } else {
+                        sel.disabled = false;
+                        const grade = TAX_CONFIG.landTax.townGrades[town];
+                        if (grade) sel.value = grade;
+                    }
+                }
+            });
+
+            // 触发详细地址识别（如果已填写）
+            autoDetectGrade('address', 'landGrade', 'addressHint');
+            autoDetectGrade('addressLand', 'landGradeLand', 'addressHintLand');
+        } else {
+            document.getElementById('townHint').style.display = 'none';
+        }
+        updateRentHint();
+    }
+
+    // ==================== 详细地址自动识别土地等级 ====================
+    function autoDetectGrade(addressInputId, gradeSelectId, hintId) {
+        const address = document.getElementById(addressInputId).value.trim();
+        const town = document.getElementById('town').value;
+        const gradeSel = document.getElementById(gradeSelectId);
+        const hintEl = document.getElementById(hintId);
+
+        if (!town || !TOWNS[town] || TOWNS[town].landTaxScope === 'none') {
+            hintEl.textContent = '';
+            hintEl.style.color = '';
+            return;
+        }
+
+        const defaultGrade = TAX_CONFIG.landTax.townGrades[town];
+        if (!defaultGrade) {
+            hintEl.textContent = '';
+            hintEl.style.color = '';
+            return;
+        }
+
+        // 无地址时显示默认等级
+        if (!address) {
+            gradeSel.value = defaultGrade;
+            hintEl.textContent = '默认' + TAX_CONFIG.landTax.gradeNames[defaultGrade] + '（' + TAX_CONFIG.landTax.gradeRates[defaultGrade] + '元/㎡·年，从高征收）';
+            hintEl.style.color = '#e67e22';
+            return;
+        }
+
+        // 有地址时根据规则自动判断
+        const rules = TAX_CONFIG.landTax.townDowngradeRules[town];
+        if (!rules) {
+            gradeSel.value = defaultGrade;
+            hintEl.textContent = '默认' + TAX_CONFIG.landTax.gradeNames[defaultGrade] + '（' + TAX_CONFIG.landTax.gradeRates[defaultGrade] + '元/㎡·年）';
+            hintEl.style.color = '#e67e22';
+            return;
+        }
+
+        let detectedGrade = defaultGrade;
+        let matchDesc = '';
+
+        for (const rule of rules) {
+            if (rule.fromGrade !== detectedGrade && rule.fromGrade !== defaultGrade) continue;
+
+            // exclude规则：地址含排除词则跳过该降级规则
+            if (rule.exclude) {
+                const excluded = rule.exclude.some(kw => address.includes(kw));
+                if (excluded) continue;
+            }
+
+            const matchRule = rule.matchRule || 'any';
+            let matched;
+            if (matchRule === 'any') {
+                matched = rule.keywords.some(kw => address.includes(kw));
+            } else if (matchRule === 'none') {
+                // none模式：没有命中任何exclude关键词才降级（用于反向匹配）
+                matched = !rule.keywords.some(kw => address.includes(kw));
+            } else {
+                matched = rule.keywords.every(kw => address.includes(kw));
+            }
+
+            if (matched) {
+                detectedGrade = rule.toGrade;
+                matchDesc = rule.desc || '';
+                // 继续检查是否还能进一步降级
+            }
+        }
+
+        gradeSel.value = detectedGrade;
+        if (detectedGrade < defaultGrade) {
+            hintEl.textContent = '地址匹配：' + matchDesc + ' → ' + TAX_CONFIG.landTax.gradeNames[detectedGrade] + '（' + TAX_CONFIG.landTax.gradeRates[detectedGrade] + '元/㎡·年）';
+            hintEl.style.color = '#27ae60';
+        } else {
+            hintEl.textContent = '未匹配到降级条件，默认' + TAX_CONFIG.landTax.gradeNames[defaultGrade] + '（' + TAX_CONFIG.landTax.gradeRates[defaultGrade] + '元/㎡·年，从高征收）';
+            hintEl.style.color = '#e67e22';
+        }
+    }
+
+    function updateRentHint() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const totalRent = parseFloat(document.getElementById('totalRent').value) || 0;
+        const hintEl = document.getElementById('rentHint');
+        if (startDate && endDate && totalRent > 0) {
+            const months = calcMonths(startDate, endDate);
+            if (months > 0) {
+                const monthlyRent = totalRent / months;
+                const monthlyExVAT = monthlyRent / 1.05;
+                hintEl.textContent = `租赁${months}个月，月均含税租金${fmt(monthlyRent)}元，月均不含税约${fmt(monthlyExVAT)}元`;
+                hintEl.style.color = monthlyExVAT > TAX_CONFIG.vat.freeThreshold ? '#e74c3c' : '#27ae60';
+            }
+        } else {
+            hintEl.textContent = '';
+        }
+    }
+
+    // 日期和金额变化时更新提示
+    document.getElementById('startDate').addEventListener('change', updateRentHint);
+    document.getElementById('endDate').addEventListener('change', updateRentHint);
+    document.getElementById('totalRent').addEventListener('input', updateRentHint);
+    // 详细地址输入时自动识别土地等级
+    document.getElementById('address').addEventListener('input', function() {
+        autoDetectGrade('address', 'landGrade', 'addressHint');
+    });
+    document.getElementById('addressLand').addEventListener('input', function() {
+        autoDetectGrade('addressLand', 'landGradeLand', 'addressHintLand');
+    });
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 5000);
+    }
+
+    // ==================== 计算工具函数 ====================
+    function calcMonths(start, end) {
+        const s = new Date(start), e = new Date(end);
+        if (e <= s) return 0;
+        return Math.round((e - s) / (1000 * 60 * 60 * 24 * 30.4375) * 10) / 10;
+    }
+
+    function fmt(num) {
+        return Number(num).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function round2(num) {
+        return Math.round(num * 100) / 100;
+    }
+
+    // ==================== 核心计算 ====================
+    function calculateTax() {
+        // 1. 表单验证
+        const town = document.getElementById('town').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const totalRent = parseFloat(document.getElementById('totalRent').value);
+        const propertyType = (document.querySelector('input[name="propertyType"]:checked') || {}).value;
+        const iitMode = (document.querySelector('input[name="iitMode"]:checked') || {}).value;
+        const invoiceType = (document.querySelector('input[name="invoiceType"]:checked') || {}).value || 'general';
+        const isSpecial = (invoiceType === 'special');
+
+        if (!town) { showToast('请选择房屋/场地所在乡镇'); return; }
+        if (!startDate || !endDate) { showToast('请选择租赁起止日期'); return; }
+        if (!totalRent || totalRent <= 0) { showToast('请输入有效的租赁总金额'); return; }
+        if (!propertyType) { showToast('请选择出租类型'); return; }
+        if (!iitMode) { showToast('请选择个人所得税计算方式'); return; }
+
+        const months = calcMonths(startDate, endDate);
+        if (months <= 0) { showToast('租赁截止日期须晚于起始日期'); return; }
+
+        // 场地/非住房需占地面积
+        if (propertyType === 'non_housing' || propertyType === 'land') {
+            const areaId = propertyType === 'non_housing' ? 'landArea' : 'landAreaLand';
+            const gradeId = propertyType === 'non_housing' ? 'landGrade' : 'landGradeLand';
+            const landArea = parseFloat(document.getElementById(areaId).value);
+            const landGrade = document.getElementById(gradeId).value;
+            if (!landArea || landArea <= 0) { showToast('请输入有效的占地面积'); return; }
+            // 如果所选乡镇不在城镇土地使用税征收范围内，提示用户确认
+            const scope = TOWNS[town].landTaxScope;
+            if (scope === 'none' && !landGrade) {
+                showToast('该乡不在城镇土地使用税征收范围内，无需缴纳城镇土地使用税。如确需缴纳，请手动选择土地等级');
+                return;
+            }
+            if (!landGrade) { showToast('请选择土地等级'); return; }
+        }
+
+        // 2. 根据类型计算
+        let result;
+        if (propertyType === 'housing') {
+            result = calcHousing(town, startDate, endDate, totalRent, months, iitMode, propertyType, isSpecial);
+            showResult('housing', result);
+        } else if (propertyType === 'non_housing') {
+            const landArea = parseFloat(document.getElementById('landArea').value);
+            const landGrade = parseInt(document.getElementById('landGrade').value);
+            result = calcNonHousing(town, startDate, endDate, totalRent, months, iitMode, landArea, landGrade, propertyType, isSpecial);
+            showResult('nonHousing', result);
+        } else {
+            const landArea = parseFloat(document.getElementById('landAreaLand').value);
+            const landGrade = parseInt(document.getElementById('landGradeLand').value);
+            result = calcLand(town, startDate, endDate, totalRent, months, iitMode, landArea, landGrade, isSpecial);
+            showResult('land', result);
+        }
+
+        // 显示结果
+        document.getElementById('resultArea').classList.add('show');
+        setTimeout(() => {
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    // ==================== 住房计算 ====================
+    function calcHousing(town, startDate, endDate, totalRent, months, iitMode, propertyType, isSpecial) {
+        const result = {
+            months, monthlyRent: round2(totalRent / months),
+            totalRent, items: [], totalTax: 0,
+            invoiceType: isSpecial ? '增值税专用发票' : '增值税普通发票'
+        };
+        const CFG = TAX_CONFIG;
+
+        // 增值税
+        const monthlyExVAT_h = result.monthlyRent / (1 + CFG.vat.housingRate);
+        const vatFree = !isSpecial && monthlyExVAT_h <= CFG.vat.freeThreshold;
+        let vatAmount = 0;
+        if (!vatFree) {
+            vatAmount = round2(monthlyExVAT_h * CFG.vat.housingRate);
+        }
+        const totalVAT = round2(vatAmount * months);
+        result.items.push({
+            name: '增值税', amount: totalVAT, free: vatFree,
+            steps: [
+                { label: '征收率', value: '3%减按1.5%' },
+                { label: '发票类型', value: isSpecial ? '增值税专用发票' : '增值税普通发票' },
+                { label: `月均含税租金`, value: `¥${fmt(result.monthlyRent)}` },
+                { label: `月均不含税租金`, value: `¥${fmt(monthlyExVAT_h)}` },
+                { label: '月均增值税额', value: vatFree ? '免征' : `¥${fmt(vatAmount)}` },
+                { label: `合计（${months}个月）`, value: vatFree ? '免征' : `¥${fmt(totalVAT)}` },
+                { label: '免税条件', value: isSpecial ? '开具专票，不享受免税' : `月不含税≤10万元 → ${vatFree ? '符合 ✓' : '不符合'}` }
+            ],
+            policy: CFG.vat.policyRefs.join('；') + '（住房减按1.5%）'
+        });
+
+        // 城建税
+        const townInfo = TOWNS[town];
+        const urbanRate = (townInfo.type === 'township') ? CFG.urbanTax.rates.county : CFG.urbanTax.rates.town;
+        let urbanAmount = 0;
+        if (totalVAT > 0) {
+            urbanAmount = round2(totalVAT * urbanRate * (CFG.urbanTax.halfCollection ? 0.5 : 1));
+        }
+        result.items.push({
+            name: '城市维护建设税', amount: urbanAmount, free: totalVAT === 0,
+            steps: [
+                { label: `城建税率（${townInfo.type === 'township' ? '乡' : '建制镇'}）`, value: `${(urbanRate * 100)}%` },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '六税两费减半', value: CFG.urbanTax.halfCollection ? '是' : '否' },
+                { label: '应纳税额', value: urbanAmount === 0 ? '免征' : `¥${fmt(urbanAmount)}` }
+            ],
+            policy: CFG.urbanTax.policyRefs.join('；')
+        });
+
+        // 教育费附加
+        // 免征条件：财税〔2016〕12号，月销售额≤10万元（所有缴纳义务人）；或增值税免征时自动免征
+        // 减半条件：财政部 税务总局公告2023年第12号，小规模纳税人/小型微利企业/个体工商户
+        const eduFree = monthlyExVAT_h <= CFG.eduSurcharge.freeThreshold;
+        let eduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let eduRate = CFG.eduSurcharge.rate;
+            if (CFG.eduSurcharge.halfCollection) eduRate *= 0.5;
+            eduAmount = round2(totalVAT * eduRate);
+        }
+        result.items.push({
+            name: '教育费附加', amount: eduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '3%' + (CFG.eduSurcharge.halfCollection ? ' → 减按1.5%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.eduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.eduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: eduAmount === 0 ? '免征' : `¥${fmt(eduAmount)}` }
+            ],
+            policy: CFG.eduSurcharge.policyRefs.join('；')
+        });
+
+        // 地方教育附加（同上）
+        let localEduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let localEduRate = CFG.localEduSurcharge.rate;
+            if (CFG.localEduSurcharge.halfCollection) localEduRate *= 0.5;
+            localEduAmount = round2(totalVAT * localEduRate);
+        }
+        result.items.push({
+            name: '地方教育附加', amount: localEduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '2%' + (CFG.localEduSurcharge.halfCollection ? ' → 减按1%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.localEduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.localEduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: localEduAmount === 0 ? '免征' : `¥${fmt(localEduAmount)}` }
+            ],
+            policy: CFG.localEduSurcharge.policyRefs.join('；')
+        });
+
+        // 房产税（住房4%，六税两费减半→实际2%）
+        const propertyTaxBase = totalRent - totalVAT; // 不含增值税
+        let propertyTaxRate = CFG.propertyTax.housingRate;
+        if (CFG.propertyTax.halfCollection) propertyTaxRate *= 0.5;
+        const propertyTaxAmount = round2(propertyTaxBase * propertyTaxRate);
+        result.items.push({
+            name: '房产税', amount: propertyTaxAmount,
+            steps: [
+                { label: '法定税率（住房优惠）', value: '4%' },
+                { label: '六税两费减半征收', value: `${CFG.propertyTax.halfCollection ? '是（至' + CFG.propertyTax.halfEndDate + '）' : '否'}` },
+                { label: '实际税率', value: `${(propertyTaxRate * 100)}%` },
+                { label: '计税依据（不含增值税）', value: `¥${fmt(propertyTaxBase)}` },
+                { label: '应纳税额', value: `¥${fmt(propertyTaxAmount)}` }
+            ],
+            policy: CFG.propertyTax.policyRefs.join('；')
+        });
+
+        // 城镇土地使用税（住房免征）
+        result.items.push({
+            name: '城镇土地使用税', amount: 0, free: true,
+            steps: [
+                { label: '政策规定', value: '个人出租住房免征' },
+                { label: '应纳税额', value: '免征' }
+            ],
+            policy: '财税〔2008〕24号：对个人出租住房，免征城镇土地使用税'
+        });
+
+        // 印花税（住房免征）
+        result.items.push({
+            name: '印花税', amount: 0, free: true,
+            steps: [
+                { label: '政策规定', value: '个人出租住房免征' },
+                { label: '应纳税额', value: '免征' }
+            ],
+            policy: '财税〔2008〕24号：对个人出租住房，免征印花税'
+        });
+
+        // 个人所得税
+        // otherTaxesMonthly: 城建税+教育费附加+地方教育附加的月均合计
+        const otherTaxesMonthly = round2((urbanAmount + eduAmount + localEduAmount) / months);
+        // 住房免征城镇土地使用税和印花税，此处均为0
+        const landTaxMonthly_h = 0;
+        const stampTaxMonthly_h = 0;
+        // 转租租金支出（按月均摊）
+        const subRentMonthly = round2(parseFloat((document.getElementById('subRentCost') || {}).value || 0) / months);
+        const iitResult = calcIIT(propertyType, totalRent, totalVAT, propertyTaxAmount, months, iitMode,
+            parseFloat((document.getElementById('repairCost') || {}).value || 0), otherTaxesMonthly,
+            landTaxMonthly_h, stampTaxMonthly_h, subRentMonthly);
+        result.items.push(iitResult);
+
+        // 合计
+        result.exVATTotal = round2(totalRent - totalVAT);
+        result.totalTax = round2(result.items.reduce((s, i) => s + i.amount, 0));
+        return result;
+    }
+
+    // ==================== 非住房计算 ====================
+    function calcNonHousing(town, startDate, endDate, totalRent, months, iitMode, landArea, landGrade, propertyType, isSpecial) {
+        const result = {
+            months, monthlyRent: round2(totalRent / months),
+            totalRent, items: [], totalTax: 0,
+            invoiceType: isSpecial ? '增值税专用发票' : '增值税普通发票'
+        };
+        const CFG = TAX_CONFIG;
+
+        // 增值税
+        const monthlyExVAT_nh = result.monthlyRent / (1 + CFG.vat.nonHousingRate);
+        const vatFree = !isSpecial && monthlyExVAT_nh <= CFG.vat.freeThreshold;
+        let vatAmount = 0;
+        if (!vatFree) {
+            vatAmount = round2(monthlyExVAT_nh * CFG.vat.nonHousingRate);
+        }
+        const totalVAT = round2(vatAmount * months);
+        result.items.push({
+            name: '增值税', amount: totalVAT, free: vatFree,
+            steps: [
+                { label: '征收率', value: '3%' },
+                { label: '发票类型', value: isSpecial ? '增值税专用发票' : '增值税普通发票' },
+                { label: `月均含税租金`, value: `¥${fmt(result.monthlyRent)}` },
+                { label: `月均不含税租金`, value: `¥${fmt(monthlyExVAT_nh)}` },
+                { label: '月均增值税额', value: vatFree ? '免征' : `¥${fmt(vatAmount)}` },
+                { label: `合计（${months}个月）`, value: vatFree ? '免征' : `¥${fmt(totalVAT)}` },
+                { label: '免税条件', value: isSpecial ? '开具专票，不享受免税' : `月不含税≤10万元 → ${vatFree ? '符合 ✓' : '不符合'}` }
+            ],
+            policy: CFG.vat.policyRefs.join('；') + '（非住房按3%）'
+        });
+
+        // 城建税
+        const townInfo = TOWNS[town];
+        const urbanRate = (townInfo.type === 'township') ? CFG.urbanTax.rates.county : CFG.urbanTax.rates.town;
+        let urbanAmount = 0;
+        if (totalVAT > 0) {
+            urbanAmount = round2(totalVAT * urbanRate * (CFG.urbanTax.halfCollection ? 0.5 : 1));
+        }
+        result.items.push({
+            name: '城市维护建设税', amount: urbanAmount, free: totalVAT === 0,
+            steps: [
+                { label: `城建税率（${townInfo.type === 'township' ? '乡' : '建制镇'}）`, value: `${(urbanRate * 100)}%` },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '六税两费减半', value: CFG.urbanTax.halfCollection ? '是' : '否' },
+                { label: '应纳税额', value: urbanAmount === 0 ? '免征' : `¥${fmt(urbanAmount)}` }
+            ],
+            policy: CFG.urbanTax.policyRefs.join('；')
+        });
+
+        // 教育费附加
+        const eduFree = monthlyExVAT_nh <= CFG.eduSurcharge.freeThreshold;
+        let eduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let eduRate = CFG.eduSurcharge.rate;
+            if (CFG.eduSurcharge.halfCollection) eduRate *= 0.5;
+            eduAmount = round2(totalVAT * eduRate);
+        }
+        result.items.push({
+            name: '教育费附加', amount: eduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '3%' + (CFG.eduSurcharge.halfCollection ? ' → 减按1.5%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.eduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.eduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: eduAmount === 0 ? '免征' : `¥${fmt(eduAmount)}` }
+            ],
+            policy: CFG.eduSurcharge.policyRefs.join('；')
+        });
+
+        // 地方教育附加（同上）
+        let localEduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let localEduRate = CFG.localEduSurcharge.rate;
+            if (CFG.localEduSurcharge.halfCollection) localEduRate *= 0.5;
+            localEduAmount = round2(totalVAT * localEduRate);
+        }
+        result.items.push({
+            name: '地方教育附加', amount: localEduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '2%' + (CFG.localEduSurcharge.halfCollection ? ' → 减按1%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.localEduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.localEduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: localEduAmount === 0 ? '免征' : `¥${fmt(localEduAmount)}` }
+            ],
+            policy: CFG.localEduSurcharge.policyRefs.join('；')
+        });
+
+        // 房产税（非住房12%，六税两费减半→实际6%）
+        const propertyTaxBase = totalRent - totalVAT;
+        let ptRate = CFG.propertyTax.nonHousingRate;
+        if (CFG.propertyTax.halfCollection) ptRate *= 0.5;
+        const propertyTaxAmount = round2(propertyTaxBase * ptRate);
+        result.items.push({
+            name: '房产税', amount: propertyTaxAmount,
+            steps: [
+                { label: '法定税率（非住房）', value: '12%' },
+                { label: '六税两费减半征收', value: `${CFG.propertyTax.halfCollection ? '是（至' + CFG.propertyTax.halfEndDate + '）' : '否'}` },
+                { label: '实际税率', value: `${(ptRate * 100)}%` },
+                { label: '计税依据（不含增值税）', value: `¥${fmt(propertyTaxBase)}` },
+                { label: '应纳税额', value: `¥${fmt(propertyTaxAmount)}` }
+            ],
+            policy: CFG.propertyTax.policyRefs.join('；')
+        });
+
+        // 城镇土地使用税
+        const annualLandTax = round2(landArea * CFG.landTax.gradeRates[landGrade]);
+        const yearFraction = months / 12;
+        let landTaxAmount = round2(annualLandTax * yearFraction);
+        if (CFG.landTax.halfCollection) landTaxAmount = round2(landTaxAmount * 0.5);
+        result.items.push({
+            name: '城镇土地使用税', amount: landTaxAmount,
+            steps: [
+                { label: `土地等级`, value: `${CFG.landTax.gradeNames[landGrade]}` },
+                { label: '年税额标准', value: `${CFG.landTax.gradeRates[landGrade]}元/㎡·年` },
+                { label: '占地面积', value: `${fmt(landArea)} ㎡` },
+                { label: `年应纳税额`, value: `¥${fmt(annualLandTax)}` },
+                { label: `租赁期占比`, value: `${months}个月 ÷ 12个月 = ${(yearFraction * 100).toFixed(1)}%` },
+                { label: '六税两费减半征收', value: `${CFG.landTax.halfCollection ? '是（至' + CFG.landTax.halfEndDate + '）' : '否'}` },
+                { label: '应纳税额', value: `¥${fmt(landTaxAmount)}` }
+            ],
+            policy: CFG.landTax.policyRefs.join('；')
+        });
+
+        // 印花税
+        const stampBase = totalRent - totalVAT;
+        let stampRate = CFG.stampTax.rate;
+        if (CFG.stampTax.halfCollection) stampRate *= 0.5;
+        const stampAmount = round2(stampBase * stampRate);
+        result.items.push({
+            name: '印花税', amount: stampAmount,
+            steps: [
+                { label: '法定税率', value: '0.1%（千分之一）' },
+                { label: '六税两费减半征收', value: `${CFG.stampTax.halfCollection ? '是（至' + CFG.stampTax.halfEndDate + '）' : '否'}` },
+                { label: '实际税率', value: `${(stampRate * 100).toFixed(2)}%` },
+                { label: '计税依据（不含增值税）', value: `¥${fmt(stampBase)}` },
+                { label: '应纳税额', value: `¥${fmt(stampAmount)}` }
+            ],
+            policy: CFG.stampTax.policyRefs.join('；')
+        });
+
+
+        // 个人所得税
+        const otherTaxesMonthly_nh = round2((urbanAmount + eduAmount + localEduAmount) / months);
+        const landTaxMonthly_nh = round2(landTaxAmount / months);
+        const stampTaxMonthly_nh = round2(stampAmount / months);
+        const subRentMonthly_nh = round2(parseFloat((document.getElementById('subRentCost') || {}).value || 0) / months);
+        const iitResult = calcIIT(propertyType, totalRent, totalVAT, propertyTaxAmount, months, iitMode,
+            parseFloat((document.getElementById('repairCost') || {}).value || 0), otherTaxesMonthly_nh,
+            landTaxMonthly_nh, stampTaxMonthly_nh, subRentMonthly_nh);
+        result.items.push(iitResult);
+
+        result.exVATTotal = round2(totalRent - totalVAT);
+        result.totalTax = round2(result.items.reduce((s, i) => s + i.amount, 0));
+        return result;
+    }
+
+    // ==================== 场地计算 ====================
+    function calcLand(town, startDate, endDate, totalRent, months, iitMode, landArea, landGrade, isSpecial) {
+        const result = {
+            months, monthlyRent: round2(totalRent / months),
+            totalRent, items: [], totalTax: 0,
+            invoiceType: isSpecial ? '增值税专用发票' : '增值税普通发票'
+        };
+        const CFG = TAX_CONFIG;
+
+        // 增值税（5%）
+        const monthlyExVAT_l = result.monthlyRent / (1 + CFG.vat.landRate);
+        const vatFree = !isSpecial && monthlyExVAT_l <= CFG.vat.freeThreshold;
+        let vatAmount = 0;
+        if (!vatFree) vatAmount = round2(monthlyExVAT_l * CFG.vat.landRate);
+        const totalVAT = round2(vatAmount * months);
+        result.items.push({
+            name: '增值税', amount: totalVAT, free: vatFree,
+            steps: [
+                { label: '征收率', value: '3%' },
+                { label: '发票类型', value: isSpecial ? '增值税专用发票' : '增值税普通发票' },
+                { label: `月均含税租金`, value: `¥${fmt(result.monthlyRent)}` },
+                { label: `月均不含税租金`, value: `¥${fmt(monthlyExVAT_l)}` },
+                { label: '月均增值税额', value: vatFree ? '免征' : `¥${fmt(vatAmount)}` },
+                { label: `合计（${months}个月）`, value: vatFree ? '免征' : `¥${fmt(totalVAT)}` },
+                { label: '免税条件', value: isSpecial ? '开具专票，不享受免税' : `月不含税≤10万元 → ${vatFree ? '符合 ✓' : '不符合'}` }
+            ],
+            policy: CFG.vat.policyRefs.join('；') + '（场地按3%）'
+        });
+
+        // 城建税
+        const townInfo = TOWNS[town];
+        const urbanRate = (townInfo.type === 'township') ? CFG.urbanTax.rates.county : CFG.urbanTax.rates.town;
+        let urbanAmount = 0;
+        if (totalVAT > 0) urbanAmount = round2(totalVAT * urbanRate * (CFG.urbanTax.halfCollection ? 0.5 : 1));
+        result.items.push({
+            name: '城市维护建设税', amount: urbanAmount, free: totalVAT === 0,
+            steps: [
+                { label: `城建税率（${townInfo.type === 'township' ? '乡' : '建制镇'}）`, value: `${(urbanRate * 100)}%` },
+                { label: '六税两费减半', value: CFG.urbanTax.halfCollection ? '是' : '否' },
+                { label: '应纳税额', value: urbanAmount === 0 ? '免征' : `¥${fmt(urbanAmount)}` }
+            ],
+            policy: CFG.urbanTax.policyRefs.join('；')
+        });
+
+        // 教育费附加
+        const eduFree = monthlyExVAT_l <= CFG.eduSurcharge.freeThreshold;
+        let eduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let eduRate = CFG.eduSurcharge.rate;
+            if (CFG.eduSurcharge.halfCollection) eduRate *= 0.5;
+            eduAmount = round2(totalVAT * eduRate);
+        }
+        result.items.push({
+            name: '教育费附加', amount: eduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '3%' + (CFG.eduSurcharge.halfCollection ? ' → 减按1.5%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.eduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.eduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: eduAmount === 0 ? '免征' : `¥${fmt(eduAmount)}` }
+            ],
+            policy: CFG.eduSurcharge.policyRefs.join('；')
+        });
+
+        // 地方教育附加（同上）
+        let localEduAmount = 0;
+        if (totalVAT > 0 && !eduFree) {
+            let localEduRate = CFG.localEduSurcharge.rate;
+            if (CFG.localEduSurcharge.halfCollection) localEduRate *= 0.5;
+            localEduAmount = round2(totalVAT * localEduRate);
+        }
+        result.items.push({
+            name: '地方教育附加', amount: localEduAmount, free: totalVAT === 0 || eduFree,
+            steps: [
+                { label: '费率', value: '2%' + (CFG.localEduSurcharge.halfCollection ? ' → 减按1%' : '') },
+                { label: '计税依据', value: `增值税额 ¥${fmt(totalVAT)}` },
+                { label: '月销售额≤10万元免征', value: eduFree ? '符合（财税〔2016〕12号）✓' : '不符合' },
+                { label: '六税两费减半', value: CFG.localEduSurcharge.halfCollection
+                    ? '符合（小规模纳税人，至' + CFG.localEduSurcharge.halfEndDate + '）'
+                    : '否' },
+                { label: '应纳金额', value: localEduAmount === 0 ? '免征' : `¥${fmt(localEduAmount)}` }
+            ],
+            policy: CFG.localEduSurcharge.policyRefs.join('；')
+        });
+
+        // 城镇土地使用税（场地必须缴纳）
+        const annualLandTax = round2(landArea * CFG.landTax.gradeRates[landGrade]);
+        const yearFraction = months / 12;
+        let landTaxAmount = round2(annualLandTax * yearFraction);
+        if (CFG.landTax.halfCollection) landTaxAmount = round2(landTaxAmount * 0.5);
+        result.items.push({
+            name: '城镇土地使用税', amount: landTaxAmount,
+            steps: [
+                { label: `土地等级`, value: `${CFG.landTax.gradeNames[landGrade]}` },
+                { label: '年税额标准', value: `${CFG.landTax.gradeRates[landGrade]}元/㎡·年` },
+                { label: '占地面积', value: `${fmt(landArea)} ㎡` },
+                { label: `年应纳税额`, value: `¥${fmt(annualLandTax)}` },
+                { label: `租赁期占比`, value: `${months}个月 ÷ 12个月 = ${(yearFraction * 100).toFixed(1)}%` },
+                { label: '六税两费减半征收', value: `${CFG.landTax.halfCollection ? '是' : '否'}` },
+                { label: '应纳税额', value: `¥${fmt(landTaxAmount)}` }
+            ],
+            policy: CFG.landTax.policyRefs.join('；')
+        });
+
+        // 印花税
+        const stampBase = totalRent - totalVAT;
+        let stampRate = CFG.stampTax.rate;
+        if (CFG.stampTax.halfCollection) stampRate *= 0.5;
+        const stampAmount = round2(stampBase * stampRate);
+        result.items.push({
+            name: '印花税', amount: stampAmount,
+            steps: [
+                { label: '法定税率', value: '0.1%（千分之一）' },
+                { label: '六税两费减半征收', value: `${CFG.stampTax.halfCollection ? '是' : '否'}` },
+                { label: '实际税率', value: `${(stampRate * 100).toFixed(2)}%` },
+                { label: '计税依据', value: `¥${fmt(stampBase)}` },
+                { label: '应纳税额', value: `¥${fmt(stampAmount)}` }
+            ],
+            policy: CFG.stampTax.policyRefs.join('；')
+        });
+
+        // 个人所得税
+        const otherTaxesMonthly_l = round2((urbanAmount + eduAmount + localEduAmount) / months);
+        const landTaxMonthly_l = round2(landTaxAmount / months);
+        const stampTaxMonthly_l = round2(stampAmount / months);
+        const subRentMonthly_l = round2(parseFloat((document.getElementById('subRentCost') || {}).value || 0) / months);
+        const iitResult = calcIIT('land', totalRent, totalVAT, 0, months, iitMode,
+            parseFloat((document.getElementById('repairCost') || {}).value || 0), otherTaxesMonthly_l,
+            landTaxMonthly_l, stampTaxMonthly_l, subRentMonthly_l);
+        result.items.push(iitResult);
+
+        result.exVATTotal = round2(totalRent - totalVAT);
+        result.totalTax = round2(result.items.reduce((s, i) => s + i.amount, 0));
+        return result;
+    }
+
+    // ==================== 个人所得税计算 ====================
+    // 政策依据：
+    // 1. 《个人所得税法》：财产租赁所得，税率20%
+    // 2. 财税〔2008〕24号：个人出租住房减按10%
+    // 3. 国税发〔1994〕89号：扣除顺序——①税费 ②修缮费（月≤800，跨月结转） ③法定费用（≤4000扣800，>4000扣20%）
+    function calcIIT(propertyType, totalRent, totalVAT, propertyTaxAmount, months, iitMode, repairCostTotal, otherTaxesMonthly, landTaxMonthly, stampTaxMonthly, subRentMonthly) {
+        const CFG = TAX_CONFIG.iit;
+        const exVATTotal = round2(totalRent - totalVAT);
+        const monthlyExVAT = round2(exVATTotal / months);
+
+        if (iitMode === 'simplified') {
+            // 综合征收率（统一1%）
+            const simpRate = CFG.simplifiedRate;
+            const amount = round2(exVATTotal * simpRate);
+            return {
+                name: '个人所得税（综合征收率）', amount,
+                steps: [
+                    { label: '计算方式', value: '综合征收率' },
+                    { label: '综合征收率', value: `${(simpRate * 100)}%` },
+                    { label: '计税依据（不含增值税）', value: `¥${fmt(exVATTotal)}` },
+                    { label: '应纳税额', value: `¥${fmt(amount)}` }
+                ],
+                policy: '参照当地税务机关核定标准'
+            };
+        }
+
+        // ===== 据实征收 =====
+        const iitRate = (propertyType === 'housing') ? CFG.housingRate : CFG.nonHousingRate;
+        const monthlyPropertyTax = round2(propertyTaxAmount / months);
+        const monthlyOtherTaxes = otherTaxesMonthly || 0;  // 城建税+教育费附加+地方教育附加 月均
+        const mLandTax = landTaxMonthly || 0;               // 城镇土地使用税 月均
+        const mStamp = stampTaxMonthly || 0;                // 印花税 月均
+        const mSubRent = subRentMonthly || 0;              // 转租租金支出 月均
+        const monthlyTotalTaxes = round2(monthlyPropertyTax + monthlyOtherTaxes + mLandTax + mStamp + mSubRent);
+
+        const fullMonths = Math.floor(months);
+        const remainFraction = months - fullMonths;
+        const totalMonths = Math.ceil(months);
+
+        let remainingRepair = repairCostTotal || 0;  // 修缮费剩余可扣除金额
+        let totalIIT = 0;
+
+        for (let m = 0; m < totalMonths; m++) {
+            let curRent;
+            if (m < fullMonths) {
+                curRent = monthlyExVAT;
+            } else if (remainFraction > 0) {
+                // 尾月：确保总额精确
+                curRent = round2(exVATTotal - monthlyExVAT * fullMonths);
+            } else {
+                continue;
+            }
+            if (curRent <= 0) continue;
+
+            // 修缮费：每月最高扣除800元，剩余部分次月继续抵扣
+            let curRepair = Math.min(remainingRepair, CFG.repairMax);
+            remainingRepair = round2(remainingRepair - curRepair);
+
+            // 第一步：扣除已缴纳的税费（房产税+城建税+教育费附加+地方教育附加）
+            // 第二步：扣除修缮费
+            let deductions = monthlyTotalTaxes + curRepair;
+            let netIncome = round2(curRent - deductions);
+            if (netIncome <= 0) continue;
+
+            // 第三步：法定费用扣除（按不含税收入-税费-修缮费后的金额判断）
+            let statDeduction;
+            if (netIncome <= 4000) {
+                statDeduction = CFG.deduction800;
+            } else {
+                statDeduction = round2(netIncome * CFG.deduction20pct);
+            }
+            let taxable = round2(Math.max(0, netIncome - statDeduction));
+            totalIIT += round2(taxable * iitRate);
+        }
+        totalIIT = round2(totalIIT);
+
+        const totalRepairDeducted = round2((repairCostTotal || 0) - remainingRepair);
+        return {
+            name: '个人所得税（据实征收）', amount: totalIIT,
+            steps: [
+                { label: '计算方式', value: '据实征收（按月计算汇总）' },
+                { label: '税目', value: '财产租赁所得' },
+                { label: '适用税率', value: `${(iitRate * 100)}%${propertyType === 'housing' ? '（住房减按10%，财税〔2008〕24号）' : ''}` },
+                { label: '不含增值税总收入', value: `¥${fmt(exVATTotal)}` },
+                { label: '月均不含税收入', value: `¥${fmt(monthlyExVAT)}` },
+                { label: '每月可扣除税费', value: `房产税¥${fmt(monthlyPropertyTax)} + 城建税及附加¥${fmt(monthlyOtherTaxes)}${mLandTax > 0 ? ' + 土地使用税' + fmt(mLandTax) : ''}${mStamp > 0 ? ' + 印花税' + fmt(mStamp) : ''}${mSubRent > 0 ? ' + 转租租金' + fmt(mSubRent) : ''} = ¥${fmt(monthlyTotalTaxes)}` },
+                { label: '修缮费', value: `总额¥${fmt(repairCostTotal || 0)}，已扣除¥${fmt(totalRepairDeducted)}，剩余¥${fmt(remainingRepair)}未扣` },
+                { label: '转租租金支出', value: mSubRent > 0 ? '总额' + fmt(round2(mSubRent * months)) + '，按月均摊' + fmt(mSubRent) + '/月' : '无（此项为0或非转租业务）' },
+                { label: '法定费用扣除', value: '月净收入（不含税-税费-修缮费）≤4000元扣800元；>4000元扣20%' },
+                { label: `合计（${months}个月）`, value: totalIIT === 0 ? '无需缴纳' : `¥${fmt(totalIIT)}` }
+            ],
+            policy: '《个人所得税法》；国税发〔1994〕89号（扣除顺序和标准）；财税〔2008〕24号（住房减按10%）'
+        };
+    }
+
+    // ==================== 结果渲染 ====================
+    function showResult(type, result) {
+        // 隐藏所有结果卡片
+        ['housingResult', 'nonHousingResult', 'landResult'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+
+        const typeMap = { housing: 'housingResult', nonHousing: 'nonHousingResult', land: 'landResult' };
+        const cardId = typeMap[type];
+        document.getElementById(cardId).style.display = 'block';
+
+        // 汇总框
+        const summaryEl = document.getElementById(cardId.replace('Result', 'Summary'));
+        summaryEl.innerHTML = `
+            <div class="total-label">${result.invoiceType || '增值税普通发票'}</div>
+            <div class="total-amount"><span class="currency">¥</span>${fmt(result.totalTax)}</div>
+            <div class="sub-info">租赁${result.months}个月 · 总租金¥${fmt(result.totalRent)}${result.exVATTotal ? ' · 不含税¥' + fmt(result.exVATTotal) : ''} · 税负率${(result.totalTax / result.totalRent * 100).toFixed(2)}%</div>
+        `;
+
+        // 明细
+        const detailsEl = document.getElementById(cardId.replace('Result', 'Details'));
+        detailsEl.innerHTML = result.items.map((item, idx) => `
+            <div class="tax-detail">
+                <div class="tax-detail-header" onclick="toggleDetail(this)">
+                    <span class="tax-name">${item.name}</span>
+                    <span class="tax-amount ${item.free || item.amount === 0 ? 'free' : ''}">${item.free || item.amount === 0 ? '免征' : '¥' + fmt(item.amount)}</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="tax-detail-body">
+                    ${item.steps.map(s => `<div class="calc-step"><span class="label">${s.label}</span><span class="value">${s.value}</span></div>`).join('')}
+                    <div class="policy-ref">📄 政策依据：${item.policy}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleDetail(header) {
+        const body = header.nextElementSibling;
+        const arrow = header.querySelector('.arrow');
+        body.classList.toggle('show');
+        arrow.classList.toggle('open');
+    }
+
+    function resetForm() {
+        document.getElementById('town').value = '';
+        document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('endDate').value = '';
+        document.getElementById('totalRent').value = '';
+        document.getElementById('landArea').value = '';
+        document.getElementById('landGrade').value = '';
+        document.getElementById('landAreaLand').value = '';
+        document.getElementById('landGradeLand').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('addressLand').value = '';
+        document.getElementById('addressHint').textContent = '';
+        document.getElementById('addressHintLand').textContent = '';
+        document.getElementById('repairCost').value = '0';
+        document.getElementById('subRentCost').value = '0';
+        document.getElementById('rentHint').textContent = '';
+        document.getElementById('townHint').style.display = 'none';
+        document.querySelectorAll('.radio-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.conditional').forEach(el => el.classList.remove('show'));
+        document.getElementById('resultArea').classList.remove('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 初始化
+    init();
+    </script>
+</body>
+</html>

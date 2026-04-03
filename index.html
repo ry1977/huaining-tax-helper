@@ -194,11 +194,23 @@
             <div class="row">
                 <div class="form-group">
                     <label>租赁起始日期<span class="required">*</span></label>
-                    <input type="date" id="startDate">
+                    <div class="date-input-wrapper">
+    <div class="date-input-display" id="startDateDisplay" onclick="openDatePicker('startDate')">
+        <span class="placeholder" id="startDatePlaceholder">请选择起始日期</span>
+        <span class="arrow-icon">📅</span>
+    </div>
+    <input type="date" id="startDate" style="display:none">
+</div>
                 </div>
                 <div class="form-group">
                     <label>租赁截止日期<span class="required">*</span></label>
-                    <input type="date" id="endDate">
+                    <div class="date-input-wrapper">
+    <div class="date-input-display" id="endDateDisplay" onclick="openDatePicker('endDate')">
+        <span class="placeholder" id="endDatePlaceholder">请选择截止日期</span>
+        <span class="arrow-icon">📅</span>
+    </div>
+    <input type="date" id="endDate" style="display:none">
+</div>
                 </div>
             </div>
             <div class="form-group">
@@ -593,6 +605,11 @@
         const m = String(today.getMonth() + 1).padStart(2, '0');
         const d = String(today.getDate()).padStart(2, '0');
         document.getElementById('startDate').value = `${y}-${m}-${d}`;
+        // 更新日期显示层
+        const startDisplay = document.getElementById('startDateDisplay');
+        if (startDisplay) startDisplay.innerHTML = '<span>' + y + '.' + m + '.' + d + '</span><span class="arrow-icon">📅</span>';
+        const startPh = document.getElementById('startDatePlaceholder');
+        if (startPh) startPh.style.display = 'none';
     }
 
     // ==================== UI交互 ====================
@@ -1448,8 +1465,14 @@
 
     function resetForm() {
         document.getElementById('town').value = '';
-        document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').value = '';
         document.getElementById('endDate').value = '';
+        // 重置日期显示层
+        ['startDate', 'endDate'].forEach(id => {
+            const displayEl = document.getElementById(id + 'Display');
+            const placeholderEl = document.getElementById(id + 'Placeholder');
+            if (displayEl) displayEl.innerHTML = '<span class="placeholder" id="' + id + 'Placeholder">请选择' + (id === 'startDate' ? '起始' : '截止') + '日期</span><span class="arrow-icon">📅</span>';
+        });
         document.getElementById('totalRent').value = '';
         document.getElementById('landArea').value = '';
         document.getElementById('landGrade').value = '';
@@ -1467,6 +1490,182 @@
         document.querySelectorAll('.conditional').forEach(el => el.classList.remove('show'));
         document.getElementById('resultArea').classList.remove('show');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==================== 日期选择器（替代原生 input type=date）====================
+    let currentPickerTarget = null;
+
+    function createPickerOverlay() {
+        if (document.getElementById('pickerOverlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'pickerOverlay';
+        overlay.className = 'picker-overlay';
+        overlay.innerHTML = '<div class="picker-panel"><div class="picker-header"><span class="picker-btn picker-btn-cancel" id="pickerCancel">取消</span><span class="title">选择日期</span><span class="picker-btn picker-btn-confirm" id="pickerConfirm">确定</span></div><div class="picker-body"><div class="picker-mask-t"></div><div class="picker-highlight"></div><div class="picker-mask-b"></div><div class="picker-column" id="pickYearCol"></div><div class="picker-column" id="pickMonthCol"></div><div class="picker-column" id="pickDayCol"></div></div></div>';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) closeDatePicker(); });
+        document.getElementById('pickerCancel').addEventListener('click', closeDatePicker);
+        document.getElementById('pickerConfirm').addEventListener('click', confirmPicker);
+    }
+
+    function getYearRange() {
+        const now = new Date();
+        return { min: now.getFullYear() - 10, max: now.getFullYear() + 20 };
+    }
+
+    function fillColumn(colEl, items, selectedIndex) {
+        colEl.innerHTML = '';
+        items.forEach((val, idx) => {
+            const div = document.createElement('div');
+            div.className = 'picker-column-item' + (idx === selectedIndex ? ' selected' : '');
+            div.textContent = val;
+            div.dataset.val = val;
+            div.dataset.idx = idx;
+            colEl.appendChild(div);
+        });
+        scrollToIndex(colEl, selectedIndex);
+    }
+
+    function scrollToIndex(colEl, index) {
+        const itemHeight = 44;
+        colEl.scrollTo({ top: index * itemHeight, behavior: 'instant' });
+    }
+
+    function getSelectedIndex(colEl) {
+        const itemHeight = 44;
+        return Math.round(colEl.scrollTop / itemHeight);
+    }
+
+    function snapColumn(colEl) {
+        const itemHeight = 44;
+        const idx = Math.round(colEl.scrollTop / itemHeight);
+        colEl.scrollTo({ top: idx * itemHeight, behavior: 'smooth' });
+        updateSelectionUI();
+        return idx;
+    }
+
+    function updateSelectionUI() {
+        ['pickYearCol','pickMonthCol','pickDayCol'].forEach(id => {
+            const col = document.getElementById(id);
+            if (!col) return;
+            const selectedIdx = getSelectedIndex(col);
+            Array.from(col.children).forEach((child, i) => {
+                child.classList.toggle('selected', i === selectedIdx);
+            });
+        });
+    }
+
+    let pickerScrollTimers = {};
+    function bindColumnScroll(colId) {
+        const col = document.getElementById(colId);
+        if (!col) return;
+        col.addEventListener('scroll', function() {
+            clearTimeout(pickerScrollTimers[colId]);
+            pickerScrollTimers[colId] = setTimeout(function() { snapColumn(col); }, 80);
+            updateSelectionUI();
+        }, { passive: true });
+    }
+
+    function openDatePicker(inputId) {
+        currentPickerTarget = inputId;
+        createPickerOverlay();
+
+        const yearRange = getYearRange();
+        const years = [];
+        for (let y = yearRange.min; y <= yearRange.max; y++) years.push(y + '年');
+        const months = [];
+        for (let m = 1; m <= 12; m++) months.push(m + '月');
+
+        const inputEl = document.getElementById(inputId);
+        let currentVal = inputEl.value; // YYYY-MM-DD
+        let selY = 0, selM = 0, selD = 0;
+
+        if (currentVal) {
+            const parts = currentVal.split('-');
+            selY = parseInt(parts[0]) - yearRange.min;
+            selM = parseInt(parts[1]) - 1;
+            selD = parseInt(parts[2]) - 1;
+        } else {
+            const today = new Date();
+            selY = today.getFullYear() - yearRange.min;
+            selM = today.getMonth();
+            selD = today.getDate() - 1;
+        }
+
+        fillColumn(document.getElementById('pickYearCol'), years, selY);
+        fillColumn(document.getElementById('pickMonthCol'), months, selM);
+
+        const daysInMonth = new Date(yearRange.min + selY, selM + 1, 0).getDate();
+        const days = [];
+        for (let d = 1; d <= daysInMonth; d++) days.push(d + '日');
+        fillColumn(document.getElementById('pickDayCol'), days, Math.min(selD, daysInMonth - 1));
+
+        bindColumnScroll('pickYearCol');
+        bindColumnScroll('pickMonthCol');
+        bindColumnScroll('pickDayCol');
+
+        document.getElementById('pickMonthCol').addEventListener('scroll', function() {
+            clearTimeout(pickerScrollTimers.monthChange);
+            pickerScrollTimers.monthChange = setTimeout(function() { onMonthOrYearChange(); }, 150);
+        }, { passive: true });
+
+        document.getElementById('pickYearCol').addEventListener('scroll', function() {
+            clearTimeout(pickerScrollTimers.yearChange);
+            pickerScrollTimers.yearChange = setTimeout(function() { onMonthOrYearChange(); }, 150);
+        }, { passive: true });
+
+        document.getElementById('pickerOverlay').classList.add('show');
+        updateSelectionUI();
+    }
+
+    function onMonthOrYearChange() {
+        const yearRange = getYearRange();
+        const yearIdx = getSelectedIndex(document.getElementById('pickYearCol'));
+        const monthIdx = getSelectedIndex(document.getElementById('pickMonthCol'));
+        const dayCol = document.getElementById('pickDayCol');
+        const curDayIdx = Math.min(getSelectedIndex(dayCol), 30);
+
+        const yearVal = yearRange.min + yearIdx;
+        const monthVal = monthIdx + 1;
+        const maxDay = new Date(yearVal, monthVal, 0).getDate();
+
+        const days = [];
+        for (let d = 1; d <= maxDay; d++) days.push(d + '日');
+        fillColumn(dayCol, days, Math.min(curDayIdx, maxDay - 1));
+        updateSelectionUI();
+    }
+
+    function confirmPicker() {
+        if (!currentPickerTarget) return;
+        const yearRange = getYearRange();
+        const yearIdx = getSelectedIndex(document.getElementById('pickYearCol'));
+        const monthIdx = getSelectedIndex(document.getElementById('pickMonthCol'));
+        const dayIdx = getSelectedIndex(document.getElementById('pickDayCol'));
+
+        const year = yearRange.min + yearIdx;
+        const month = String(monthIdx + 1).padStart(2, '0');
+        const day = String(dayIdx + 1).padStart(2, '0');
+        const dateStr = year + '-' + month + '-' + day;
+
+        const inputEl = document.getElementById(currentPickerTarget);
+        inputEl.value = dateStr;
+
+        const displayEl = document.getElementById(currentPickerTarget + 'Display');
+        const placeholderEl = document.getElementById(currentPickerTarget + 'Placeholder');
+        if (displayEl) {
+            displayEl.innerHTML = '<span>' + year + '.' + month + '.' + day + '</span><span class="arrow-icon">📅</span>';
+        }
+        if (placeholderEl) placeholderEl.style.display = 'none';
+
+        // 触发 change 事件（保持与原有逻辑兼容）
+        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+        closeDatePicker();
+    }
+
+    function closeDatePicker() {
+        const overlay = document.getElementById('pickerOverlay');
+        if (overlay) overlay.classList.remove('show');
+        currentPickerTarget = null;
     }
 
     // 初始化

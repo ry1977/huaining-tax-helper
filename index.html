@@ -721,8 +721,9 @@
         // 住房优惠：财税〔2008〕24号，减按10%
         // 据实征收扣除顺序：国税发〔1994〕89号
         //   ①财产租赁过程中缴纳的税费（不含增值税）
-        //   ②修缮费（月≤800元，跨月结转）
-        //   ③法定费用扣除：月净收入≤4000扣800，>4000扣20%
+        //   ②转租支出（向出租方支付的租金，按月均摊）
+        //   ③修缮费（月≤800元，跨月结转）
+        //   ④法定费用扣除：月净收入≤4000扣800，>4000扣20%
         iit: {
             housingRate: 0.10,         // 住房减按10%
             nonHousingRate: 0.20,      // 非住房20%
@@ -1847,7 +1848,7 @@
     // 政策依据：
     // 1. 《个人所得税法》：财产租赁所得，税率20%
     // 2. 财税〔2008〕24号：个人出租住房减按10%
-    // 3. 国税发〔1994〕89号：扣除顺序——①税费 ②修缮费（月≤800，跨月结转） ③法定费用（≤4000扣800，>4000扣20%）
+    // 3. 国税发〔1994〕89号：扣除顺序——①税费 ②转租租金支出 ③修缮费（月≤800，跨月结转） ④法定费用（≤4000扣800，>4000扣20%）
     function calcIIT(propertyType, totalRent, totalVAT, propertyTaxAmount, months, iitMode, repairCostTotal, otherTaxesMonthly, landTaxMonthly, stampTaxMonthly, subRentMonthly) {
         const CFG = TAX_CONFIG.iit;
         const exVATTotal = round2(totalRent - totalVAT);
@@ -1876,7 +1877,7 @@
         const mLandTax = landTaxMonthly || 0;               // 城镇土地使用税 月均
         const mStamp = stampTaxMonthly || 0;                // 印花税 月均
         const mSubRent = subRentMonthly || 0;              // 转租租金支出 月均
-        const monthlyTotalTaxes = round2(monthlyPropertyTax + monthlyOtherTaxes + mLandTax + mStamp + mSubRent);
+        const monthlyTotalTaxes = round2(monthlyPropertyTax + monthlyOtherTaxes + mLandTax + mStamp);  // 不含转租租金
 
         const fullMonths = Math.floor(months);
         const remainFraction = months - fullMonths;
@@ -1901,13 +1902,15 @@
             let curRepair = Math.min(remainingRepair, CFG.repairMax);
             remainingRepair = round2(remainingRepair - curRepair);
 
-            // 第一步：扣除已缴纳的税费（房产税+城建税+教育费附加+地方教育附加）
-            // 第二步：扣除修缮费
-            let deductions = monthlyTotalTaxes + curRepair;
+            // 扣除顺序（国税发〔1994〕89号）：
+            // 第一步：扣除已缴纳的税费（房产税+城建税+教育费附加+地方教育附加+印花税+城镇土地使用税）
+            // 第二步：扣除转租租金支出
+            // 第三步：扣除修缮费
+            let deductions = monthlyTotalTaxes + mSubRent + curRepair;
             let netIncome = round2(curRent - deductions);
             if (netIncome <= 0) continue;
 
-            // 第三步：法定费用扣除（按不含税收入-税费-修缮费后的金额判断）
+            // 第四步：法定费用扣除（按扣除税费-转租支出-修缮费后的金额判断）
             let statDeduction;
             if (netIncome <= 4000) {
                 statDeduction = CFG.deduction800;
@@ -1928,10 +1931,10 @@
                 { label: '适用税率', value: `${(iitRate * 100)}%${propertyType === 'housing' ? '（住房减按10%，财税〔2008〕24号）' : ''}` },
                 { label: '不含增值税总收入', value: `¥${fmt(exVATTotal)}` },
                 { label: '月均不含税收入', value: `¥${fmt(monthlyExVAT)}` },
-                { label: '每月可扣除税费', value: `房产税¥${fmt(monthlyPropertyTax)} + 城建税及附加¥${fmt(monthlyOtherTaxes)}${mLandTax > 0 ? ' + 土地使用税' + fmt(mLandTax) : ''}${mStamp > 0 ? ' + 印花税' + fmt(mStamp) : ''}${mSubRent > 0 ? ' + 转租租金' + fmt(mSubRent) : ''} = ¥${fmt(monthlyTotalTaxes)}` },
-                { label: '修缮费', value: `总额¥${fmt(repairCostTotal || 0)}，已扣除¥${fmt(totalRepairDeducted)}，剩余¥${fmt(remainingRepair)}未扣` },
+                { label: '每月可扣除税费', value: `房产税¥${fmt(monthlyPropertyTax)} + 城建税及附加¥${fmt(monthlyOtherTaxes)}${mLandTax > 0 ? ' + 土地使用税' + fmt(mLandTax) : ''}${mStamp > 0 ? ' + 印花税' + fmt(mStamp) : ''} = ¥${fmt(monthlyTotalTaxes)}` },
                 { label: '转租租金支出', value: mSubRent > 0 ? '总额' + fmt(round2(mSubRent * months)) + '，按月均摊' + fmt(mSubRent) + '/月' : '无（此项为0或非转租业务）' },
-                { label: '法定费用扣除', value: '月净收入（不含税-税费-修缮费）≤4000元扣800元；>4000元扣20%' },
+                { label: '修缮费', value: `总额¥${fmt(repairCostTotal || 0)}，已扣除¥${fmt(totalRepairDeducted)}，剩余¥${fmt(remainingRepair)}未扣` },
+                { label: '法定费用扣除', value: '月净收入（不含税-税费-转租支出-修缮费）≤4000元扣800元；>4000元扣20%' },
                 { label: `合计（${months}个月）`, value: totalIIT === 0 ? '无需缴纳' : `¥${fmt(totalIIT)}` }
             ],
             policy: '《个人所得税法》；国税发〔1994〕89号（扣除顺序和标准）；财税〔2008〕24号（住房减按10%）'

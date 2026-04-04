@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>安卓日期选择器 - 独立测试页 v3.6.1</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+            background:#f5f7fa;color:#2c3e50;line-height:1.6;min-height:100vh;
+            padding:20px;
+        }
+        h1{font-size:18px;margin-bottom:8px;color:#1a5276}
+        .subtitle{font-size:13px;color:#7f8c8d;margin-bottom:24px}
+        .info{
+            background:#eaf2f8;border-radius:10px;padding:14px 16px;font-size:13px;
+            margin-bottom:20px;line-height:1.8;
+        }
+        .info strong{color:#1a5276}
+        .info .warn{color:#e74c3c}
+
+        /* ===== 测试输入框 ===== */
+        .test-section{margin-bottom:28px}
+        .test-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#2c3e50}
+        .test-input-wrap{
+            background:#fff;border:1px solid #dcdde1;border-radius:10px;
+            padding:12px 16px;min-height:48px;display:flex;align-items:center;
+            cursor:pointer;position:relative;
+        }
+        /* 原生 input：默认透明覆盖 */
+        .native-date{position:absolute;width:100%;height:100%;opacity:0;top:0;left:0;z-index:2}
+        /* Android 模式下：彻底禁用原生 input */
+        body.android-mode .native-date{
+            display:none !important;
+            visibility:hidden;
+            pointer-events:none;
+        }
+        /* 非 Android 模式：显示原生 input */
+        body.native-mode .native-date{
+            opacity:1;position:relative;width:100%;z-index:1;height:44px;font-size:15px;
+        }
+        body.native-mode .arrow-icon,
+        body.native-mode .disp-text{display:none!important}
+
+        .disp-text{color:#aaa;font-size:15px}
+        .disp-text.has-value{color:#2c3e50}
+        .arrow-icon{position:absolute;right:14px;color:#999;font-size:18px;pointer-events:none}
+
+        /* ===== 安卓选择器弹窗（始终定义，由 JS 控制 display） ===== */
+
+        /* 遮罩层 */
+        .pk-overlay{
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            z-index:99999;background:rgba(0,0,0,.45);
+            display:none;
+        }
+        .pk-overlay.active{display:block}
+
+        /* 弹窗面板 */
+        .pk-panel{
+            position:fixed;left:0;right:0;bottom:0;
+            background:#fff;border-radius:20px 20px 0 0;
+            z-index:100000;display:none;
+            animation:pkSlideUp .28s ease-out forwards;
+        }
+        .pk-panel.show{display:block}
+        @keyframes pkSlideUp{from{transform:translateY(100%);opacity:.5} to{transform:translateY(0);opacity:1}}
+
+        /* ===== 头部区域 ===== */
+        .pk-head{
+            padding:16px 20px 4px;text-align:center;
+            flex-shrink:0;background:#fff;
+        }
+        .pk-year-big{
+            font-size:26px;font-weight:900;color:#1a5276;
+            line-height:1.2;padding:6px 14px;border-radius:8px;
+            display:inline-block;cursor:pointer;
+            border:2px dashed #2980b9;
+        }
+        .pk-year-big::after{content:' ▼';font-size:12px;color:#2980b9;margin-left:4px;font-weight:400}
+        .pk-year-big:active{background:#f0f7fb}
+        .pk-tip{
+            font-size:11.5px;color:#7f8c8d;margin-top:6px;line-height:1.4;
+        }
+
+        /* 年月日显示行 */
+        .pk-date-display{
+            text-align:center;padding:10px 20px 8px;
+            border-bottom:1px solid #f0f0f0;
+        }
+        .pk-dd-year{font-size:19px;font-weight:800;color:#1a5276}
+        .pk-dd-md{font-size:14px;color:#555;font-weight:600}
+        .pk-dd-wk{font-size:12px;color:#aaa;margin-left:4px}
+
+        /* ===== 月导航箭头 ===== */
+        .pk-nav{
+            display:flex;align-items:center;justify-content:center;gap:24px;
+            padding:10px 20px 14px;border-bottom:1px solid #f0f0f0;
+        }
+        .pk-arrow-btn{
+            width:44px;height:44px;border-radius:50%;border:2px solid #bbb;
+            display:flex;align-items:center;justify-content:center;
+            font-size:22px;color:#555;cursor:pointer;flex-shrink:0;
+            touch-action:manipulation;-webkit-tap-highlight-color:rgba(41,128,185,.2);
+        }
+        .pk-arrow-btn:active{background:#d6eaf8;border-color:#2980b9;color:#2980b9}
+        .pk-cur-month{font-size:18px;font-weight:800;color:#2c3e50;min-width:64px;text-align:center}
+
+        /* ===== 滚动列区域 ===== */
+        .pk-scroll-area{
+            height:240px;position:relative;overflow:hidden;
+            display:flex;align-items:center;justify-content:center;
+        }
+        /* 渐变遮罩 */
+        .pk-scroll-area::before,
+        .pk-scroll-area::after{
+            content:'';position:absolute;left:0;right:0;z-index:10;
+            pointer-events:none;
+        }
+        .pk-scroll-area::before{
+            top:0;height:80px;
+            background:linear-gradient(to bottom, rgba(255,255,255,.95), transparent);
+        }
+        .pk-scroll-area::after{
+            bottom:0;height:80px;
+            background:linear-gradient(to top, rgba(255,255,255,.95), transparent);
+        }
+
+        /* 高亮选中行 —— 去掉边框，仅保留背景微提示 */
+        .pk-hl-bar{
+            position:absolute;left:10px;right:10px;z-index:5;
+            height:44px;top:50%;margin-top:-22px;
+            border:none;border-radius:10px;
+            background:rgba(41,128,185,.04);
+            pointer-events:none;
+        }
+
+        .pk-cols{display:flex;width:100%;height:100%}
+
+        .pk-col{
+            flex:1;height:100%;overflow-y:auto;overflow-x:hidden;
+            -webkit-overflow-scrolling:touch;scroll-snap-type:y mandatory;
+            scrollbar-width:none;
+        }
+        .pk-col::-webkit-scrollbar{display:none!important}
+        .pk-col-inner{padding:98px 0}/* 上下留白 = (240-44)/2 = 98px 让首末项也能居中 */
+
+        .pk-opt{
+            height:44px;display:flex;align-items:center;justify-content:center;
+            font-size:17px;color:#333;scroll-snap-align:center;
+            cursor:pointer;user-select:none;-webkit-user-select:none;
+            transition:all .08s ease;
+        }
+        .pk-opt:active{background:#ebf5fb}
+        .pk-opt.pk-sel{color:#2980b9;font-weight:800;font-size:19px}
+
+        /* ===== 底部按钮栏 ===== */
+        .pk-foot{
+            display:flex;gap:10px;padding:14px 20px 28px;
+            border-top:1px solid #eee;background:#fff;
+            flex-shrink:0;
+        }
+        .pk-btn{
+            flex:1;height:48px;border-radius:12px;font-size:16px;
+            font-weight:700;border:none;cursor:pointer;
+            touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+            display:flex;align-items:center;justify-content:center;
+            user-select:none;-webkit-user-select:none;
+        }
+        .pk-btn-cancel{background:#ecf0f1;color:#666}
+        .pk-btn-cancel:active{background:#d5dbdb}
+        .pk-btn-today{flex:0.7;background:#eaf2fb;color:#2980b9}
+        .pk-btn-today:active{background:#d4e6f1}
+        .pk-btn-ok{background:#2980b9;color:#fff}
+        .pk-btn-ok:active{background:#1f6185}
+
+        /* ===== 年份全屏选择页面（v3.6：恢复全屏弹出+点击选择） ===== */
+        .pk-year-sheet{
+            display:none;position:absolute;top:0;left:0;right:0;bottom:0;
+            background:#fff;z-index:200;border-radius:20px 20px 0 0;
+            animation:pkSlideUp .25s ease-out forwards;
+        }
+        .pk-year-sheet.show{display:block}
+        .pky-head{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:16px 20px;border-bottom:1px solid #eee;
+        }
+        .pky-back{
+            font-size:15px;color:#2980b9;font-weight:700;cursor:pointer;padding:6px 12px;
+            user-select:none;-webkit-user-select:none;
+        }
+        .pky-back:active{background:#ebf5fb;border-radius:8px}
+        .pky-title{font-size:17px;font-weight:800;color:#1a5276}
+        .pky-dummy{width:60px}
+        .pky-list{
+            height:calc(100% - 58px);overflow-y:auto;
+            -webkit-overflow-scrolling:touch;padding:8px 0 24px;
+            scrollbar-width:none;
+        }
+        .pky-list::-webkit-scrollbar{display:none!important}
+        .pky-item{
+            padding:14px 28px;font-size:18px;color:#333;text-align:center;
+            cursor:pointer;border-bottom:1px solid #f5f5f5;user-select:none;
+            -webkit-user-select:none;
+        }
+        .pky-item:active{background:#eaf2f8}
+        .pky-item.pky-sel{
+            color:#2980b9;font-weight:900;font-size:21px;background:#ebf5fb;
+        }
+
+        /* 结果框 */
+        .res-box{background:#fff;border-radius:12px;padding:16px;margin-top:20px;border:2px dashed #2980b9}
+        .res-title{font-size:14px;font-weight:700;color:#1a5276;margin-bottom:10px}
+        .res-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+        .res-row:last-child{border-bottom:none}
+        .res-lbl{color:#888}
+        .res-val{font-weight:700;color:#2c3e50}
+    </style>
+</head>
+<body>
+
+<h1>📅 安卓日期选择器 — 测试页 v3.6.1</h1>
+<p class="subtitle">仅 Android 设备生效 · iOS/PC 使用原生日期控件</p>
+
+<div class="info">
+    <strong>📱 设备：</strong><span id="devInfo">检测中...</span><br>
+    <strong>🔵 运行模式：</strong><span id="modeInfo">--</span><br>
+    <span class="warn">⚠️ 此为独立测试页面，不影响生产环境 index.html</span>
+</div>
+
+<div class="test-section">
+    <label class="test-label">租赁起始日期（点击选择）</label>
+    <div class="test-input-wrap" id="wrapStart">
+        <input type="date" id="startDate" class="native-date">
+        <span class="disp-text" id="dispStart">请选择起始日期</span>
+        <span class="arrow-icon">📅</span>
+    </div>
+</div>
+
+<div class="test-section">
+    <label class="test-label">租赁截止日期（点击选择）</label>
+    <div class="test-input-wrap" id="wrapEnd">
+        <input type="date" id="endDate" class="native-date">
+        <span class="disp-text" id="dispEnd">请选择截止日期</span>
+        <span class="arrow-icon">📅</span>
+    </div>
+</div>
+
+<div class="res-box">
+    <div class="res-title">📋 当前选中值</div>
+    <div class="res-row"><span class="res-lbl">起始日期</span><span class="res-val" id="rStart">--</span></div>
+    <div class="res-row"><span class="res-lbl">截止日期</span><span class="res-val" id="rEnd">--</span></div>
+    <div class="res-row"><span class="res-lbl">租赁月数</span><span class="res-val" id="rMonths">--</span></div>
+</div>
+
+<!-- 选择器弹窗 -->
+<div class="pk-overlay" id="pkOverlay"></div>
+<div class="pk-panel" id="pkPanel">
+
+    <!-- 头部 -->
+    <div class="pk-head">
+        <div class="pk-year-big" id="pkYearBtn">2026年</div>
+        <div class="pk-tip">↑ 点选年份切换 &nbsp;|&nbsp; 左右箭头切月 &nbsp;|&nbsp; 点击选日子</div>
+    </div>
+    <div class="pk-date-display">
+        <span class="pk-dd-year" id="ddYear">2026</span><span class="pk-dd-md">年</span>
+        <span class="pk-dd-md" id="ddMonth">4</span><span class="pk-dd-md">月</span>
+        <span class="pk-dd-md" id="ddDay">4</span><span class="pk-dd-md">日</span>
+        <span class="pk-dd-wk" id="ddWk"></span>
+    </div>
+
+    <!-- 月份箭头 -->
+    <div class="pk-nav">
+        <div class="pk-arrow-btn" id="btnPrevMonth">‹</div>
+        <div class="pk-cur-month" id="curMonthTxt">4月</div>
+        <div class="pk-arrow-btn" id="btnNextMonth">›</div>
+    </div>
+
+    <!-- 滚动列（两列：月份/日子） -->
+    <div class="pk-scroll-area">
+        <div class="pk-hl-bar"></div>
+        <div class="pk-cols" id="pkCols">
+            <div class="pk-col" id="colMonth"><div class="pk-col-inner" id="innerMonth"></div></div>
+            <div class="pk-col" id="colDay"><div class="pk-col-inner" id="innerDay"></div></div>
+        </div>
+    </div>
+
+    <!-- 按钮 -->
+    <div class="pk-foot">
+        <button class="pk-btn pk-btn-cancel" id="btnCancel">取消</button>
+        <button class="pk-btn pk-btn-today" id="btnToday">今天</button>
+        <button class="pk-btn pk-btn-ok" id="btnOk">确定</button>
+    </div>
+
+    <!-- 年份全屏选择页面（v3.6：恢复点击弹出+列表点选） -->
+    <div class="pk-year-sheet" id="yearSheet">
+        <div class="pky-head">
+            <div class="pky-back" id="btnYearBack">← 返回</div>
+            <div class="pky-title">选择年份</div>
+            <div class="pky-dummy"></div>
+        </div>
+        <div class="pky-list" id="yearList"></div>
+    </div>
+</div>
+
+<script>
+(function(){
+    // ========== 1. 设备检测（纯 JS，不依赖 CSS media query） ==========
+    var ua = navigator.userAgent.toLowerCase();
+    var isAndroid = /android/i.test(ua);
+    var isIOS = /iphone|ipad|ipod/i.test(ua) || (ua.includes('mac') && navigator.maxTouchPoints > 0);
+
+    // 显示设备信息
+    document.getElementById('devInfo').textContent =
+        'UA: ' + navigator.userAgent.substring(0, 80) + '...';
+    var modeEl = document.getElementById('modeInfo');
+
+    if (isAndroid) {
+        // === ANDROID 模式 ===
+        document.body.classList.add('android-mode');
+        modeEl.textContent = '✅ Android 自定义选择器模式（JS 检测 + class 控制）';
+        modeEl.style.color = '#27ae60';
+        initAndroidMode();
+    } else {
+        // === 原生模式（iOS / PC / 其他）===
+        document.body.classList.add('native-mode');
+        modeEl.textContent = '❌ 非 Android，使用原生 <input type=date>';
+        modeEl.style.color = '#e74c3c';
+        initNativeMode();
+    }
+
+    // ========== 2. 原生模式（iOS/PC）==========
+    function initNativeMode() {
+        var startInp = document.getElementById('startDate');
+        var endInp = document.getElementById('endDate');
+        startInp.addEventListener('change', function() { updateDisp('start', this.value); });
+        endInp.addEventListener('change', function() { updateDisp('end', this.value); });
+    }
+
+    function updateDisp(field, value) {
+        if (!value) return;
+        var p = value.split('-');
+        var de = document.getElementById(field === 'start' ? 'dispStart' : 'dispEnd');
+        var y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
+        var wks = ['周日','周一','周二','周三','周四','周五','周六'];
+        var wkName = wks[new Date(y, m-1, d).getDay()];
+        de.textContent = y + '年' + m + '月' + d + '日 ' + wkName;
+        de.classList.add('has-value');
+        de.style.color = '#2c3e50';
+        refreshRes();
+    }
+
+    function refreshRes() {
+        var sv = document.getElementById('startDate').value;
+        var ev = document.getElementById('endDate').value;
+        document.getElementById('rStart').textContent = sv || '--';
+        document.getElementById('rEnd').textContent = ev || '--';
+        if (sv && ev) {
+            var months = Math.ceil((new Date(ev) - new Date(sv)) / 2592000000);
+            document.getElementById('rMonths').textContent = months + ' 个月';
+        } else {
+            document.getElementById('rMonths').textContent = '--';
+        }
+    }
+
+    // ========== 3. Android 自定义模式 ==========
+    function initAndroidMode() {
+        var field = null, sY, sM, sD;
+        var WKS = ['周日','周一','周二','周三','周四','周五','周六'];
+        var MONS = ['','一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+        function dim(y, m) { return new Date(y, m+1, 0).getDate(); }
+        function wk(y, m, d) { return WKS[new Date(y, m, d).getDay()]; }
+        function p2(n) { return n < 10 ? '0'+n : ''+n; }
+
+        // ---- 打开选择器 ----
+        function openPicker(f) {
+            field = f;
+            var inp = document.getElementById(f === 'start' ? 'startDate' : 'endDate');
+            var v = inp.value;
+            if (v) {
+                var parts = v.split('-');
+                sY = +parts[0]; sM = +parts[1]; sD = +parts[2];
+            } else {
+                var now = new Date();
+                sY = now.getFullYear(); sM = now.getMonth() + 1; sD = now.getDate();
+            }
+            renderAll();
+            document.getElementById('pkOverlay').style.display = 'block';
+            document.getElementById('pkPanel').classList.add('show');
+            setTimeout(scrollToSel, 120);
+        }
+
+        function closePicker() {
+            document.getElementById('pkPanel').classList.remove('show');
+            document.getElementById('pkOverlay').style.display = 'none';
+            document.getElementById('yearSheet').classList.remove('show');
+        }
+
+        // ---- 点击输入框区域触发选择器 ----
+        document.getElementById('wrapStart').addEventListener('click', function(e) { openPicker('start'); });
+        document.getElementById('wrapEnd').addEventListener('click', function(e) { openPicker('end'); });
+
+        // ---- 底部按钮 ----
+        document.getElementById('btnCancel').addEventListener('click', closePicker);
+
+        document.getElementById('btnOk').addEventListener('click', function() {
+            var ymd = p2(sY) + '-' + p2(sM) + '-' + p2(sD);
+            var dispStr = sY + '年' + sM + '月' + sD + '日 ' + wk(sY, sM-1, sD);
+            var inp = document.getElementById(field === 'start' ? 'startDate' : 'endDate');
+            inp.value = ymd;
+            var de = document.getElementById(field === 'start' ? 'dispStart' : 'dispEnd');
+            de.textContent = dispStr;
+            de.classList.add('has-value');
+            de.style.color = '#2c3e50';
+            closePicker();
+            refreshRes();
+        });
+
+        document.getElementById('btnToday').addEventListener('click', function() {
+            var n = new Date();
+            sY = n.getFullYear(); sM = n.getMonth() + 1; sD = n.getDate();
+            renderAll();
+            _scrollingLock = true;
+            scrollToSelMonth();
+            scrollToSelDay();
+            setTimeout(function() { _scrollingLock = false; }, 50);
+        });
+
+        // ---- 月份箭头导航 ----
+        document.getElementById('btnPrevMonth').addEventListener('click', function() {
+            sM--;
+            if (sM < 1) { sM = 12; sY--; }
+            var maxD = dim(sY, sM);
+            if (sD > maxD) sD = maxD;
+            renderAll();
+            _scrollingLock = true;
+            scrollToSelMonth();
+            scrollToSelDay();
+            setTimeout(function() { _scrollingLock = false; }, 50);
+        });
+        document.getElementById('btnNextMonth').addEventListener('click', function() {
+            sM++;
+            if (sM > 12) { sM = 1; sY++; }
+            var maxD = dim(sY, sM);
+            if (sD > maxD) sD = maxD;
+            renderAll();
+            _scrollingLock = true;
+            scrollToSelMonth();
+            scrollToSelDay();
+            setTimeout(function() { _scrollingLock = false; }, 50);
+        });
+
+        // ---- 渲染月份和日期列 ----
+        function renderAll() {
+            document.getElementById('pkYearBtn').textContent = sY + '年';
+            document.getElementById('ddYear').textContent = sY;
+            document.getElementById('ddMonth').textContent = sM;
+            document.getElementById('ddDay').textContent = sD;
+            document.getElementById('ddWk').textContent = wk(sY, sM-1, sD);
+            document.getElementById('curMonthTxt').textContent = sM + '月';
+
+            // 月份列
+            var im = document.getElementById('innerMonth');
+            im.innerHTML = '';
+            for (var m = 1; m <= 12; m++) {
+                var div = document.createElement('div');
+                div.className = 'pk-opt' + (m === sM ? ' pk-sel' : '');
+                div.textContent = MONS[m];
+                (function(mm) {
+                    div.addEventListener('click', function() {
+                        sM = mm;
+                        var mx = dim(sY, sM);
+                        if (sD > mx) sD = mx;
+                        renderAll();
+                        _scrollingLock = true;
+                        scrollToSelMonth();
+                        scrollToSelDay();
+                        setTimeout(function() { _scrollingLock = false; }, 50);
+                    });
+                })(m);
+                im.appendChild(div);
+            }
+            renderDaysOnly();
+        }
+
+        function renderDaysOnly() {
+            var id = document.getElementById('innerDay');
+            id.innerHTML = '';
+            var days = dim(sY, sM);
+            for (var dd = 1; dd <= days; dd++) {
+                var div = document.createElement('div');
+                div.className = 'pk-opt' + (dd === sD ? ' pk-sel' : '');
+                div.textContent = dd + '日';
+                (function(day) {
+                    div.addEventListener('click', function() {
+                        sD = day;
+                        renderAll();
+                        _scrollingLock = true;
+                        scrollToSelDay();
+                        setTimeout(function() { _scrollingLock = false; }, 50);
+                    });
+                })(dd);
+                id.appendChild(div);
+            }
+        }
+
+        // ---- 滚动到选中项（程序主动设置，需要加锁防止触发scroll handler） ----
+        function scrollToSel() {
+            _scrollingLock = true;
+            scrollToSelMonth();
+            scrollToSelDay();
+            // 延迟解锁，确保同步的scroll事件都被跳过
+            setTimeout(function() { _scrollingLock = false; }, 50);
+        }
+
+        function scrollToSelMonth() {
+            var col = document.getElementById('colMonth');
+            col.scrollTop = (sM - 1) * ITEM_H;
+        }
+
+        function scrollToSelDay() {
+            var col = document.getElementById('colDay');
+            col.scrollTop = (sD - 1) * ITEM_H;
+        }
+
+        // ===== 滑动选择（v3.4 彻底重写） =====
+        // 策略改变：
+        //   不再在 scroll 事件中实时更新选中状态（容易和 scrollTop 设置冲突）
+        //   改用：touchend 后等待惯性结束 → 计算居中项 → 吸附 → 更新选中
+        //   这样完全避免了"滚动中修改状态→触发重渲染→scrollTop归零"的死循环
+        var ITEM_H = 44;
+        var PADDING_TOP = 98;
+        var _scrollingLock = false;
+        var _snapTimerM = null;   // 月份列吸附定时器
+        var _snapTimerD = null;   // 日期列吸附定时器
+
+        // 根据 scrollTop 计算当前最接近居中的索引
+        function getCenterIndex(col) {
+            var st = col.scrollTop + PADDING_TOP;
+            // v3.6修复：当 scrollTop 极小（< ITEM_H*0.4）时，说明用户滑到了最顶部附近
+            // 直接返回 1，避免 padding-top 导致的浮点舍入误差选成第2项
+            if (col.scrollTop < ITEM_H * 0.4) return 1;
+            return Math.round(st / ITEM_H);
+        }
+
+        function clampIdx(idx, max) {
+            if (idx < 1) return 1;
+            if (idx > max) return max;
+            return idx;
+        }
+
+        // ---- 月份列：touchend 启动吸附检测 ----
+        var colM = document.getElementById('colMonth');
+
+        // 用户开始触摸时清除之前的吸附定时器
+        colM.addEventListener('touchstart', function() {
+            if (_snapTimerM) { clearTimeout(_snapTimerM); _snapTimerM = null; }
+        }, { passive: true });
+
+        // 手指离开后启动检测：每隔 50ms 检查是否停止滚动
+        colM.addEventListener('touchend', function() {
+            scheduleSnap(colM, 'month', 12);
+        }, { passive: true });
+
+        // 也监听 scrollend（如果浏览器支持的话）
+        colM.addEventListener('scrollend', function() {
+            if (_snapTimerM) { clearTimeout(_snapTimerM); _snapTimerD = null; }
+            doSnap(colM, 'month', 12);
+        });
+
+        // ---- 日期列：同上 ----
+        var colD = document.getElementById('colDay');
+
+        colD.addEventListener('touchstart', function() {
+            if (_snapTimerD) { clearTimeout(_snapTimerD); _snapTimerD = null; }
+        }, { passive: true });
+
+        colD.addEventListener('touchend', function() {
+            scheduleSnap(colD, 'day', dim(sY, sM));
+        }, { passive: true });
+
+        colD.addEventListener('scrollend', function() {
+            if (_snapTimerD) { clearTimeout(_snapTimerD); _snapTimerD = null; }
+            doSnap(colD, 'day', dim(sY, sM));
+        });
+
+        // 核心函数：安排一次吸附检测
+        function scheduleSnap(col, type, maxVal) {
+            var lastST = col.scrollTop;
+            var checkCount = 0;
+            var MAX_CHECKS = 20;  // 最多检测 1 秒（20 * 50ms）
+
+            function check() {
+                var nowST = col.scrollTop;
+                checkCount++;
+                if (nowST === lastST || checkCount >= MAX_CHECKS) {
+                    // 滚动停了（或超时），执行吸附
+                    _snapTimerM = null;
+                    _snapTimerD = null;
+                    doSnap(col, type, maxVal);
+                } else {
+                    lastST = nowST;
+                    // 继续检测
+                    var t2 = setTimeout(check, 50);
+                    if (type === 'month') _snapTimerM = t2;
+                    else _snapTimerD = t2;
+                }
+            }
+            var t0 = setTimeout(check, 80);
+            if (type === 'month') _snapTimerM = t0;
+            else _snapTimerD = t0;
+        }
+
+        // 执行吸附：计算居中项 → 对齐到整项位置 → 更新选中
+        function doSnap(col, type, maxVal) {
+            if (_scrollingLock) return;
+            var rawIdx = getCenterIndex(col);
+            // 索引从 1 开始（因为 padding-top 存在），clamp 到 [1, maxVal]
+            var idx = clampIdx(rawIdx, maxVal);
+            var targetScroll = (idx - 1) * ITEM_H;
+
+            // v3.6修复：降低吸附阈值（从0.3→0.1），确保边界项（第1项scrollTop=0）也能被正确吸附
+            // 同时强制执行一次 scrollTo 对齐，消除 scroll-snap 的微小偏差
+            if (Math.abs(col.scrollTop - targetScroll) > ITEM_H * 0.1) {
+                _scrollingLock = true;
+                col.scrollTop = targetScroll;
+                setTimeout(function() { _scrollingLock = false; }, 80);
+            }
+
+            // 更新选中值
+            if (type === 'month' && idx !== sM) {
+                sM = idx;
+                updateSelDisplayOnly();
+                renderDaysOnly();  // 月份变化才重建日期列
+                _scrollingLock = true;
+                scrollToSelDay();
+                setTimeout(function() { _scrollingLock = false; }, 80);
+            } else if (type === 'day' && idx !== sD) {
+                sD = idx;
+                updateSelDisplayOnly();
+            }
+        }
+
+        function maxVar(type, fallback) {
+            if (type === 'day') return dim(sY, sM);
+            return fallback;
+        }
+
+        // 只更新头部显示和选中样式（纯样式切换，绝对不动 DOM 结构）
+        function updateSelDisplayOnly() {
+            document.getElementById('ddYear').textContent = sY;
+            document.getElementById('pkYearBtn').textContent = sY + '年';
+            document.getElementById('ddMonth').textContent = sM;
+            document.getElementById('ddDay').textContent = sD;
+            document.getElementById('ddWk').textContent = wk(sY, sM - 1, sD);
+            document.getElementById('curMonthTxt').textContent = sM + '月';
+            // 更新月份列选中样式
+            var monthItems = document.querySelectorAll('#innerMonth .pk-opt');
+            for (var i = 0; i < monthItems.length; i++) {
+                if (i + 1 === sM) monthItems[i].classList.add('pk-sel');
+                else monthItems[i].classList.remove('pk-sel');
+            }
+            // 更新日期列选中样式
+            var dayItems = document.querySelectorAll('#innerDay .pk-opt');
+            for (var j = 0; j < dayItems.length; j++) {
+                if (j + 1 === sD) dayItems[j].classList.add('pk-sel');
+                else dayItems[j].classList.remove('pk-sel');
+            }
+        }
+
+        // ---- 年份全屏选择（v3.6：点击"2026年"→ 弹出全屏年份列表 → 点击选择） ----
+        var YEAR_MIN = 2000;
+        var YEAR_MAX = 2099;
+
+        // 点击顶部大号年份按钮 → 打开全屏年份选择页
+        document.getElementById('pkYearBtn').addEventListener('click', function() {
+            openYearSheet();
+        });
+
+        function openYearSheet() {
+            renderYearList();
+            document.getElementById('yearSheet').classList.add('show');
+        }
+
+        function closeYearSheet() {
+            document.getElementById('yearSheet').classList.remove('show');
+            // 年份变化后检查日期合法性
+            var mx = dim(sY, sM);
+            if (sD > mx) sD = mx;
+            renderAll();
+            _scrollingLock = true;
+            scrollToSel();
+            setTimeout(function() { _scrollingLock = false; }, 80);
+        }
+
+        // 返回按钮
+        document.getElementById('btnYearBack').addEventListener('click', closeYearSheet);
+
+        // 渲染年份列表（2000~2099，共100年）
+        function renderYearList() {
+            var listEl = document.getElementById('yearList');
+            listEl.innerHTML = '';
+            for (var y = YEAR_MIN; y <= YEAR_MAX; y++) {
+                var div = document.createElement('div');
+                div.className = 'pky-item' + (y === sY ? ' pky-sel' : '');
+                div.textContent = y + '年';
+                (function(yy) {
+                    div.addEventListener('click', function() {
+                        sY = yy;
+                        closeYearSheet();  // 选完后自动返回主页面
+                    });
+                })(y);
+                listEl.appendChild(div);
+            }
+        }
+
+        // ---- 遮罩关闭 ----
+        document.getElementById('pkOverlay').addEventListener('click', closePicker);
+    }
+})();
+</script>
+</body>
+</html>

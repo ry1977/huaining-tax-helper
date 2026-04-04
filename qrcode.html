@@ -47,7 +47,7 @@ body{
 /* ===== 二维码区域 ===== */
 .qrcode-wrapper{
     background:linear-gradient(135deg,#f0f7fc,#e8f4fd);
-    border-radius:18px;padding:22px;border:2.5px dashed #5dade2;
+    border-radius:18px;padding:24px;border:2.5px dashed #5dade2;
     display:inline-block;margin-bottom:20px;position:relative;
 }
 .qrcode-wrapper::after{
@@ -56,21 +56,8 @@ body{
     white-space:nowrap;font-weight:600;
 }
 
-/* 左上角小悦悦 - 男税务官（半身，部分被遮蔽） */
-.qrcode-boy{
-    position:absolute;top:-6px;left:-6px;width:72px;height:80px;z-index:2;
-    filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));
-    transform:rotate(-5deg);
-}
-/* 右上角小悦悦 - 女税务官（半身，部分被遮蔽） */
-.qrcode-girl{
-    position:absolute;top:-6px;right:-6px;width:72px;height:80px;z-index:2;
-    filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));
-    transform:scaleX(-1) rotate(-5deg);
-}
-
 .qrcode-wrapper img,.qrcode-wrapper svg{
-    display:block;margin:0 auto;position:relative;z-index:1;
+    display:block;margin:0 auto;
 }
 
 .url-display{
@@ -114,101 +101,10 @@ body{
     <!-- 副标题 -->
     <div class="subtitle-line">安徽省安庆市怀宁县税务局 · 服务工具</div>
 
-    <!-- 二维码（含左上角男/右上角女 小悦悦半身卡通形象） -->
+    <!-- 二维码 -->
     <div class="qrcode-wrapper">
 
-        <!-- 左上角：男税务官"小悦悦" Q版半身形象 -->
-        <svg class="qrcode-boy" viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-            <!-- 头发 -->
-            <ellipse cx="40" cy="26" rx="25" ry="18" fill="#2d3436"/>
-            <path d="M16 28 Q18 12 40 10 Q62 12 64 28 Q58 18 40 17 Q22 18 16 28Z" fill="#2d3436"/>
-            <!-- 脸 -->
-            <ellipse cx="40" cy="38" rx="21" ry="22" fill="#ffeaa7"/>
-            <!-- 耳朵 -->
-            <ellipse cx="18" cy="40" rx="4" ry="6" fill="#ffeaa7"/>
-            <!-- 眉毛 -->
-            <path d="M28 32 Q33 29 37 32" stroke="#636e72" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-            <path d="M43 32 Q48 29 52 32" stroke="#636e72" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-            <!-- 眼睛 - 大眼萌风 -->
-            <ellipse cx="32" cy="38" rx="4" ry="4.5" fill="#2d3436"/>
-            <ellipse cx="48" cy="38" rx="4" ry="4.5" fill="#2d3436"/>
-            <circle cx="33.5" cy="36.5" r="1.5" fill="#fff"/>
-            <circle cx="49.5" cy="36.5" r="1.5" fill="#fff"/>
-            <!-- 鼻子小圆点 -->
-            <circle cx="40" cy="44" r="1.5" fill="#fab1a0"/>
-            <!-- 微笑 -->
-            <path d="M33 51 Q40 57 47 51" stroke="#e17055" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <!-- 腮红 -->
-            <ellipse cx="24" cy="45" rx="4" ry="2.5" fill="#ff7675" opacity=".35"/>
-            <ellipse cx="56" cy="45" rx="4" ry="2.5" fill="#ff7675" opacity=".35"/>
-            <!-- 制服身体（半身到胸口） -->
-            <path d="M15 57 Q14 55 17 53 L28 48 L52 48 L63 53 Q66 55 65 57 L65 92 L15 92Z" fill="#0984e3"/>
-            <!-- 制服领口 -->
-            <path d="M30 57 L40 66 L50 57" fill="#fff"/>
-            <path d="M32 59 L40 64 L48 59" fill="none" stroke="#e17055" stroke-width="1.5"/>
-            <!-- 左肩章 -->
-            <rect x="16" y="54" width="9" height="5" rx="1.5" fill="#e17055"/>
-            <!-- 胸前税徽圆形底 -->
-            <circle cx="40" cy="76" r="7" fill="#fdcb6e" stroke="#e17055" stroke-width="1"/>
-            <text x="40" y="79.5" text-anchor="middle" font-size="8" font-weight="bold" fill="#d63031">税</text>
-            <!-- 右手挥手 -->
-            <path d="M63 58 Q73 54 77 62 Q78 67 75 70" stroke="#ffeaa7" stroke-width="7" fill="none" stroke-linecap="round"/>
-            <circle cx="76" cy="71" r="5" fill="#ffeaa7"/>
-        </svg>
-
-        <!-- 右上角：女税务官"小悦悦" Q版半身形象 -->
-        <svg class="qrcode-girl" viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-            <!-- 头发 - 长发披肩感 -->
-            <ellipse cx="40" cy="26" rx="26" ry="19" fill="#2d3436"/>
-            <ellipse cx="40" cy="18" rx="23" ry="14" fill="#2d3436"/>
-            <!-- 刘海 -->
-            <path d="M18 26 Q22 16 40 15 Q58 16 62 26 Q55 20 40 19 Q25 20 18 26Z" fill="#2d3436"/>
-            <!-- 双马尾暗示 -->
-            <ellipse cx="14" cy="34" rx="6" ry="10" fill="#2d3436"/>
-            <ellipse cx="66" cy="34" rx="6" ry="10" fill="#2d3436"/>
-            <!-- 发饰蝴蝶结 -->
-            <path d="M40 10 L36 6 L40 9 L44 6 Z" fill="#e84393"/>
-            <circle cx="40" cy="10" r="2.5" fill="#e84393"/>
-            <!-- 脸 -->
-            <ellipse cx="40" cy="38" rx="20" ry="21" fill="#ffecd2"/>
-            <!-- 耳朵 -->
-            <ellipse cx="19" cy="39" rx="3.5" ry="5.5" fill="#ffecd2"/>
-            <!-- 眉毛 - 弯弯的更温柔 -->
-            <path d="M28 32 Q33 30 37 32" stroke="#636e72" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-            <path d="M43 32 Q48 30 52 32" stroke="#636e72" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-            <!-- 眼睛 - 更大更亮 -->
-            <ellipse cx="32" cy="38" rx="4.2" ry="4.8" fill="#2d3436"/>
-            <ellipse cx="48" cy="38" rx="4.2" ry="4.8" fill="#2d3436"/>
-            <circle cx="33.5" cy="36.5" r="1.8" fill="#fff"/>
-            <circle cx="49.5" cy="36.5" r="1.8" fill="#fff"/>
-            <!-- 睫毛 -->
-            <path d="M27 35 L26 33" stroke="#2d3436" stroke-width="1.2" stroke-linecap="round"/>
-            <path d="M37 35 L38 33" stroke="#2d3436" stroke-width="1.2" stroke-linecap="round"/>
-            <path d="M43 35 L42 33" stroke="#2d3436" stroke-width="1.2" stroke-linecap="round"/>
-            <path d="M53 35 L54 33" stroke="#2d3436" stroke-width="1.2" stroke-linecap="round"/>
-            <!-- 鼻子小圆点 -->
-            <circle cx="40" cy="44" r="1.5" fill="#f8b500" opacity=".5"/>
-            <!-- 微笑 -->
-            <path d="M33 51 Q40 58 47 51" stroke="#e17055" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <!-- 腮红 -->
-            <ellipse cx="24" cy="45" rx="4.5" ry="2.8" fill="#ff7675" opacity=".4"/>
-            <ellipse cx="56" cy="45" rx="4.5" ry="2.8" fill="#ff7675" opacity=".4"/>
-            <!-- 制服身体（半身） -->
-            <path d="M16 57 Q15 55 18 53 L28 48 L52 48 L62 53 Q65 55 64 57 L64 92 L16 92Z" fill="#0984e3"/>
-            <!-- 领口带花边 -->
-            <path d="M30 57 L40 66 L50 57" fill="#fff"/>
-            <path d="M32 59 L40 64 L48 59" fill="none" stroke="#e84393" stroke-width="1.5"/>
-            <!-- 左肩章 -->
-            <rect x="17" y="54" width="9" height="5" rx="1.5" fill="#e84393"/>
-            <!-- 胸前税徽 -->
-            <circle cx="40" cy="76" r="7" fill="#fdcb6e" stroke="#e84393" stroke-width="1"/>
-            <text x="40" y="79.5" text-anchor="middle" font-size="8" font-weight="bold" fill="#d63031">税</text>
-            <!-- 手持文件夹/平板 -->
-            <path d="M62 57 Q72 54 75 60L75 78Q73 80 63 76Z" fill="#e84393" opacity=".85" rx="3"/>
-            <rect x="68" y="61" width="4" height="13" rx="1" fill="#fff" opacity=".7"/>
-        </svg>
-
-<svg style="width:230px;height:230px" xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 37 37" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#1a5276" d="M2 2.5h7m2 0h2m5 0h1m1 0h2m2 0h3m1 0h7M2 3.5h1m5 0h1m4 0h1m3 0h2m1 0h1m3 0h1m3 0h1m5 0h1M2 4.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h2m3 0h1m1 0h3m2 0h1m1 0h1m1 0h3m1 0h1M2 5.5h1m1 0h3m1 0h1m1 0h3m7 0h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h1M2 6.5h1m1 0h3m1 0h1m1 0h2m1 0h7m2 0h2m1 0h2m1 0h1m1 0h3m1 0h1M2 7.5h1m5 0h1m1 0h7m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m5 0h1M2 8.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M10 9.5h1m3 0h1m3 0h1m1 0h7M2 10.5h1m1 0h5m2 0h1m1 0h1m1 0h2m2 0h1m1 0h1m6 0h5M3 11.5h2m1 0h2m2 0h4m1 0h1m2 0h5m2 0h2m1 0h2m1 0h2m1 0h1M2 12.5h3m2 0h5m2 0h6m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1M2 13.5h5m6 0h1m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m3 0h5M5 14.5h1m1 0h4m1 0h2m2 0h3m3 0h4m1 0h1m1 0h3m1 0h1M3 15.5h1m1 0h1m4 0h2m2 0h2m1 0h1m1 0h2m4 0h1m2 0h1m2 0h1m1 0h2M3 16.5h2m2 0h4m3 0h5m1 0h1m1 0h1m1 0h1m2 0h2m2 0h3M2 17.5h2m2 0h1m3 0h1m1 0h2m2 0h2m5 0h1m3 0h2m1 0h3M7 18.5h2m1 0h3m3 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m2 0h1M3 19.5h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1m1 0h4m1 0h5m1 0h2m1 0h1M8 20.5h1m3 0h2m1 0h4m1 0h1m2 0h1m3 0h1m1 0h2m1 0h2M2 21.5h6m5 0h1m1 0h1m1 0h2m4 0h2m1 0h2m1 0h4m1 0h1M3 22.5h3m1 0h3m2 0h1m3 0h2m2 0h2m1 0h1m2 0h2m1 0h3m1 0h2M2 23.5h5m2 0h1m4 0h2m1 0h3m2 0h4m2 0h2m1 0h2m1 0h1M2 24.5h1m1 0h3m1 0h1m1 0h2m1 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h2M2 25.5h1m2 0h1m1 0h1m3 0h3m1 0h2m1 0h1m2 0h4m1 0h1m1 0h6M2 26.5h1m1 0h1m3 0h1m1 0h7m1 0h4m2 0h1m1 0h5m2 0h2M10 27.5h2m2 0h2m2 0h5m2 0h2m3 0h1m1 0h1m1 0h1M2 28.5h7m2 0h1m1 0h1m2 0h2m1 0h1m4 0h3m1 0h1m1 0h1m1 0h2M2 29.5h1m5 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h1m3 0h1m3 0h4M2 30.5h1m1 0h3m1 0h1m1 0h5m1 0h1m1 0h1m3 0h3m1 0h6m2 0h1M2 31.5h1m1 0h3m1 0h1m1 0h8m1 0h2m4 0h3m2 0h1m1 0h1m1 0h1M2 32.5h1m1 0h3m1 0h1m1 0h3m1 0h6m2 0h2m3 0h3m1 0h2M2 33.5h1m5 0h1m3 0h2m2 0h2m5 0h3m1 0h2m1 0h3M2 34.5h7m1 0h1m3 0h1m2 0h1m1 0h1m2 0h1m1 0h3m2 0h1m1 0h1m1 0h1"/></svg>
+<svg style="width:250px;height:250px" xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 37 37" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#1a5276" d="M2 2.5h7m2 0h2m5 0h1m1 0h2m2 0h3m1 0h7M2 3.5h1m5 0h1m4 0h1m3 0h2m1 0h1m3 0h1m3 0h1m5 0h1M2 4.5h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h2m3 0h1m1 0h3m2 0h1m1 0h1m1 0h3m1 0h1M2 5.5h1m1 0h3m1 0h1m1 0h3m7 0h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h1M2 6.5h1m1 0h3m1 0h1m1 0h2m1 0h7m2 0h2m1 0h2m1 0h1m1 0h3m1 0h1M2 7.5h1m5 0h1m1 0h7m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m5 0h1M2 8.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M10 9.5h1m3 0h1m3 0h1m1 0h7M2 10.5h1m1 0h5m2 0h1m1 0h1m1 0h2m2 0h1m1 0h1m6 0h5M3 11.5h2m1 0h2m2 0h4m1 0h1m2 0h5m2 0h2m1 0h2m1 0h2m1 0h1M2 12.5h3m2 0h5m2 0h6m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1M2 13.5h5m6 0h1m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m3 0h5M5 14.5h1m1 0h4m1 0h2m2 0h3m3 0h4m1 0h1m1 0h3m1 0h1M3 15.5h1m1 0h1m4 0h2m2 0h2m1 0h1m1 0h2m4 0h1m2 0h1m2 0h1m1 0h2M3 16.5h2m2 0h4m3 0h5m1 0h1m1 0h1m1 0h1m2 0h2m2 0h3M2 17.5h2m2 0h1m3 0h1m1 0h2m2 0h2m5 0h1m3 0h2m1 0h3M7 18.5h2m1 0h3m3 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m2 0h1M3 19.5h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1m1 0h4m1 0h5m1 0h2m1 0h1M8 20.5h1m3 0h2m1 0h4m1 0h1m2 0h1m3 0h1m1 0h2m1 0h2M2 21.5h6m5 0h1m1 0h1m1 0h2m4 0h2m1 0h2m1 0h4m1 0h1M3 22.5h3m1 0h3m2 0h1m3 0h2m2 0h2m1 0h1m2 0h2m1 0h3m1 0h2M2 23.5h5m2 0h1m4 0h2m1 0h3m2 0h4m2 0h2m1 0h2m1 0h1M2 24.5h1m1 0h3m1 0h1m1 0h2m1 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h2M2 25.5h1m2 0h1m1 0h1m3 0h3m1 0h2m1 0h1m2 0h4m1 0h1m1 0h6M2 26.5h1m1 0h1m3 0h1m1 0h7m1 0h4m2 0h1m1 0h5m2 0h2M10 27.5h2m2 0h2m2 0h5m2 0h2m3 0h1m1 0h1m1 0h1M2 28.5h7m2 0h1m1 0h1m2 0h2m1 0h1m4 0h3m1 0h1m1 0h1m1 0h2M2 29.5h1m5 0h1m1 0h1m2 0h1m1 0h3m1 0h2m1 0h1m3 0h1m3 0h4M2 30.5h1m1 0h3m1 0h1m1 0h5m1 0h1m1 0h1m3 0h3m1 0h6m2 0h1M2 31.5h1m1 0h3m1 0h1m1 0h8m1 0h2m4 0h3m2 0h1m1 0h1m1 0h1M2 32.5h1m1 0h3m1 0h1m1 0h3m1 0h6m2 0h2m3 0h3m1 0h2M2 33.5h1m5 0h1m3 0h2m2 0h2m5 0h3m1 0h2m1 0h3M2 34.5h7m1 0h1m3 0h1m2 0h1m1 0h1m2 0h1m1 0h3m2 0h1m1 0h1m1 0h1"/></svg>
 
     </div>
 
